@@ -5,25 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-  public function up()
+  /**
+   * Run the migrations.
+   */
+  public function up(): void
   {
-    // 1️⃣ Tabel credentials dulu
-    Schema::create('credentials', function (Blueprint $table) {
-      $table->id();
-      $table->string('name');      // nama credential
-      $table->string('username');  // username
-      $table->string('type');  // type
-      $table->text('password');    // password (hashed)
-      $table->integer('port');
-      $table->timestamps();
-    });
-
-    // 2️⃣ Tabel assets
-    Schema::create('assets', function (Blueprint $table) {
+    Schema::create('asset_firewall', function (Blueprint $table) {
       $table->id();
       $table->string('hostname');
       $table->string('type')->nullable();
-      $table->string('group')->nullable();
       $table->string('ip_address')->nullable();
       $table->string('mac_address')->nullable();
       $table->string('serial_number')->nullable();
@@ -46,9 +36,11 @@ return new class extends Migration {
     });
   }
 
-  public function down()
+  /**
+   * Reverse the migrations.
+   */
+  public function down(): void
   {
-    Schema::dropIfExists('assets');
-    Schema::dropIfExists('credentials');
+    Schema::dropIfExists('asset_firewall');
   }
 };
