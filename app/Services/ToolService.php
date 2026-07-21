@@ -3,91 +3,63 @@
 namespace App\Services;
 
 use App\Models\IpAddress;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 class ToolService
 {
   public function detectIntent(string $text): string
   {
-    $text = mb_strtolower(trim($text));
+    $normalizedText = mb_strtolower(trim($text));
 
     if (
-      str_contains($text, 'ip address')
-      || str_contains($text, 'alamat ip')
-      || str_contains($text, 'daftar ip')
-      || str_contains($text, 'ip yang tersedia')
-      || str_contains($text, 'ip tersedia')
-      || str_contains($text, 'ip digunakan')
+      str_contains($normalizedText, 'ip address')
+      || str_contains($normalizedText, 'alamat ip')
+      || str_contains($normalizedText, 'daftar ip')
+      || str_contains($normalizedText, 'ip berapa')
+      || str_contains($normalizedText, 'ip mana')
+      || $this->extractIpAddress($normalizedText) !== null
     ) {
       return 'ip_address';
-    }
-
-    if (
-      str_contains($text, 'invoice')
-      || str_contains($text, 'tagihan')
-    ) {
-      return 'invoice';
     }
 
     return 'general_chat';
   }
 
-  public function getIpAddresses(
-    ?User $user = null,
-    int $limit = 20
-  ): array {
-    $query = IpAddress::query()
-      ->with([
-        'vlan',
-      ]);
+  public function extractIpAddress(string $text): ?string
+  {
+    $matched = preg_match(
+      '/\b(?:\d{1,3}\.){3}\d{1,3}\b/',
+      $text,
+      $matches
+    );
 
-    /*
-     * Jika user diberikan, batasi IP hanya berdasarkan site
-     * yang dimiliki user melalui scope ownedByUser().
-     */
-    if ($user !== null) {
-      $query->ownedByUser($user);
+    if ($matched !== 1) {
+      return null;
     }
 
-    return $query
-      ->orderBy('ip')
-      ->limit($limit)
-      ->get()
-      ->map(function (IpAddress $ipAddress): array {
-        return [
-          'id' => $ipAddress->getKey(),
-          'ip' => $ipAddress->ip,
-          'description' => $ipAddress->description,
-          'vlan_id' => $ipAddress->vlan_id,
-          'vlan' => $ipAddress->vlan?->name,
-          'site' => $ipAddress->vlan?->site,
-          'created_at' => $ipAddress->created_at?->format(
-            'Y-m-d H:i:s'
-          ),
-        ];
-      })
-      ->values()
-      ->all();
+    $ip = $matches[0];
+
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+      ? $ip
+      : null;
   }
 
-  public function searchIpAddresses(
-    string $keyword,
-    ?User $user = null,
+  public function findIpAddress(string $ip): ?IpAddress
+  {
+    return IpAddress::query()
+      ->with('vlan')
+      ->where('ip', $ip)
+      ->first();
+  }
+
+  public function getIpAddresses(
+    ?string $keyword = null,
     int $limit = 20
   ): array {
-    $keyword = trim($keyword);
-
     $query = IpAddress::query()
-      ->with([
-        'vlan',
-      ]);
+      ->with('vlan');
 
-    if ($user !== null) {
-      $query->ownedByUser($user);
-    }
-
-    if ($keyword !== '') {
+    if (filled($keyword)) {
       $query->where(function (Builder $query) use ($keyword): void {
         $query
           ->where('ip', 'like', '%' . $keyword . '%')
@@ -99,37 +71,62 @@ class ToolService
           ->orWhereHas(
             'vlan',
             function (Builder $vlanQuery) use ($keyword): void {
-              $vlanQuery
-                ->where(
-                  'site',
-                  'like',
-                  '%' . $keyword . '%'
-                )
-                ->orWhere(
-                  'name',
-                  'like',
-                  '%' . $keyword . '%'
-                );
+              $vlanQuery->where(
+                'site',
+                'like',
+                '%' . $keyword . '%'
+              );
             }
           );
       });
     }
 
     return $query
-      ->orderBy('ip')
-      ->limit($limit)
+      ->orderByRaw(
+        'INET_ATON(ip) IS NULL, INET_ATON(ip)'
+      )
+      ->limit(max(1, min($limit, 50)))
       ->get()
       ->map(function (IpAddress $ipAddress): array {
         return [
-          'id' => $ipAddress->getKey(),
           'ip' => $ipAddress->ip,
           'description' => $ipAddress->description,
-          'vlan_id' => $ipAddress->vlan_id,
-          'vlan' => $ipAddress->vlan?->name,
           'site' => $ipAddress->vlan?->site,
+          'vlan_id' => $ipAddress->vlan_id,
         ];
       })
       ->values()
       ->all();
+  }
+
+  public function extractSearchKeyword(string $text): ?string
+  {
+    $text = mb_strtolower(trim($text));
+
+    $ignoredWords = [
+      'tolong',
+      'cari',
+      'cek',
+      'lihat',
+      'tampilkan',
+      'daftar',
+      'data',
+      'alamat',
+      'ip',
+      'address',
+      'yang',
+      'di',
+      'untuk',
+      'berapa',
+      'mana',
+      'semua',
+    ];
+
+    $text = str_replace($ignoredWords, ' ', $text);
+    $text = preg_replace('/\s+/', ' ', $text);
+
+    $keyword = trim((string) $text);
+
+    return $keyword !== '' ? $keyword : null;
   }
 }

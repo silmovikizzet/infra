@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use JsonException;
+use App\Models\IpAddress;
 
 class AIService
 {
@@ -12,53 +12,89 @@ class AIService
   ) {
   }
 
-  /**
-   * @throws JsonException
-   */
   public function handleMessage(string $text): string
   {
     $intent = $this->tools->detectIntent($text);
 
     if ($intent === 'ip_address') {
-      $ipAddresses = $this->tools->getIpAddresses(
-        limit: 20
-      );
+      return $this->handleIpAddressQuestion($text);
+    }
 
-      if ($ipAddresses === []) {
-        return 'Tidak ada data IP address yang ditemukan.';
+    /*
+     * Hanya pertanyaan umum yang diteruskan ke Ollama.
+     */
+    return $this->ollama->chat($text);
+  }
+
+  protected function handleIpAddressQuestion(string $text): string
+  {
+    $exactIp = $this->tools->extractIpAddress($text);
+
+    /*
+     * Jika user menyebut IP lengkap, query langsung satu baris.
+     */
+    if ($exactIp !== null) {
+      $ipAddress = $this->tools->findIpAddress($exactIp);
+
+      if (!$ipAddress) {
+        return "IP {$exactIp} tidak ditemukan di database.";
       }
 
-      $databaseContext = json_encode(
-        $ipAddresses,
-        JSON_THROW_ON_ERROR
-        | JSON_PRETTY_PRINT
-        | JSON_UNESCAPED_UNICODE
-        | JSON_UNESCAPED_SLASHES
-      );
-
-      return $this->ollama->chat(
-        <<<PROMPT
-Pertanyaan pengguna:
-{$text}
-
-Berikut adalah data IP address dari database MySQL:
-{$databaseContext}
-
-Aturan jawaban:
-- Jawab hanya berdasarkan data database tersebut.
-- Jangan menambahkan IP address yang tidak ada.
-- Jangan mengarang nama VLAN, site, atau deskripsi.
-- Jika informasi yang ditanyakan tidak tersedia, katakan bahwa datanya tidak tersedia.
-- Gunakan Bahasa Indonesia.
-- Tampilkan IP address dalam format yang mudah dibaca.
-PROMPT
-      );
+      return $this->formatSingleIpAddress($ipAddress);
     }
 
-    if ($intent === 'invoice') {
-      return 'Fitur pembacaan invoice belum diaktifkan.';
+    /*
+     * Jika tidak menyebut IP lengkap, coba cari berdasarkan
+     * deskripsi atau site.
+     */
+    $keyword = $this->tools->extractSearchKeyword($text);
+
+    $ipAddresses = $this->tools->getIpAddresses(
+      keyword: $keyword,
+      limit: 20
+    );
+
+    if ($ipAddresses === []) {
+      return $keyword !== null
+        ? "Tidak ada IP address yang cocok dengan pencarian \"{$keyword}\"."
+        : 'Tidak ada data IP address di database.';
     }
 
-    return $this->ollama->chat($text);
+    $lines = [
+      $keyword !== null
+      ? "Hasil pencarian IP untuk \"{$keyword}\":"
+      : 'Daftar IP address:',
+      '',
+    ];
+
+    foreach ($ipAddresses as $index => $ipAddress) {
+      $number = $index + 1;
+
+      $lines[] = implode("\n", [
+        "{$number}. {$ipAddress['ip']}",
+        '   Deskripsi: ' . ($ipAddress['description'] ?: '-'),
+        '   Site: ' . ($ipAddress['site'] ?: '-'),
+        '   VLAN ID: ' . ($ipAddress['vlan_id'] ?: '-'),
+      ]);
+    }
+
+    if (count($ipAddresses) >= 20) {
+      $lines[] = '';
+      $lines[] = 'Hasil dibatasi maksimal 20 data.';
+    }
+
+    return implode("\n", $lines);
+  }
+
+  protected function formatSingleIpAddress(IpAddress $ipAddress): string
+  {
+    return implode("\n", [
+      'Data IP ditemukan:',
+      '',
+      "IP: {$ipAddress->ip}",
+      'Deskripsi: ' . ($ipAddress->description ?: '-'),
+      'Site: ' . ($ipAddress->vlan?->site ?: '-'),
+      'VLAN ID: ' . ($ipAddress->vlan_id ?: '-'),
+    ]);
   }
 }
