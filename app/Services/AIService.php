@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use JsonException;
+
 class AIService
 {
   public function __construct(
@@ -10,20 +12,53 @@ class AIService
   ) {
   }
 
+  /**
+   * @throws JsonException
+   */
   public function handleMessage(string $text): string
   {
     $intent = $this->tools->detectIntent($text);
 
-    return match ($intent) {
-      'invoice' => $this->ollama->chat(
-        "User bertanya soal invoice/tagihan. Saat ini integrasi database belum diaktifkan. Jawab bahwa fitur invoice sedang disiapkan."
-      ),
+    if ($intent === 'ip_address') {
+      $ipAddresses = $this->tools->getIpAddresses(
+        limit: 20
+      );
 
-      'router_offline' => $this->ollama->chat(
-        "User bertanya router offline. Saat ini integrasi database belum diaktifkan. Jawab bahwa fitur cek router sedang disiapkan."
-      ),
+      if ($ipAddresses === []) {
+        return 'Tidak ada data IP address yang ditemukan.';
+      }
 
-      default => $this->ollama->chat($text),
-    };
+      $databaseContext = json_encode(
+        $ipAddresses,
+        JSON_THROW_ON_ERROR
+        | JSON_PRETTY_PRINT
+        | JSON_UNESCAPED_UNICODE
+        | JSON_UNESCAPED_SLASHES
+      );
+
+      return $this->ollama->chat(
+        <<<PROMPT
+Pertanyaan pengguna:
+{$text}
+
+Berikut adalah data IP address dari database MySQL:
+{$databaseContext}
+
+Aturan jawaban:
+- Jawab hanya berdasarkan data database tersebut.
+- Jangan menambahkan IP address yang tidak ada.
+- Jangan mengarang nama VLAN, site, atau deskripsi.
+- Jika informasi yang ditanyakan tidak tersedia, katakan bahwa datanya tidak tersedia.
+- Gunakan Bahasa Indonesia.
+- Tampilkan IP address dalam format yang mudah dibaca.
+PROMPT
+      );
+    }
+
+    if ($intent === 'invoice') {
+      return 'Fitur pembacaan invoice belum diaktifkan.';
+    }
+
+    return $this->ollama->chat($text);
   }
 }
