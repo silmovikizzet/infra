@@ -87,7 +87,7 @@ class NetworkSwitchDetail extends Component
       ->with('credential')
       ->whereKey($this->networkswitchId);
 
-    if (!$user->hasRole('administrator')) {
+    if (!$this->isAdministrator()) {
       $sites = $user->sites()
         ->pluck('site')
         ->map(fn($site) => trim((string) $site))
@@ -101,6 +101,7 @@ class NetworkSwitchDetail extends Component
 
       $query->whereIn('location', $sites->all());
     }
+
 
     $this->networkSwitch = $query->firstOrFail();
 

@@ -54,4 +54,10 @@ class User extends Authenticatable
   {
     return $this->hasMany(SiteUser::class);
   }
+  private function isAdministrator(): bool
+  {
+    $user = auth()->user();
+    return $user !== null
+      && strtolower(trim((string) $user->role)) === 'Admin';
+  }
 }
