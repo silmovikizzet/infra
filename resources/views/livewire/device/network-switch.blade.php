@@ -129,8 +129,8 @@
             <td class="text-uppercase">{{ $a->location }}</td>
             <td class="fw-semibold" title="{{ $a->remark }}">
               <a href="{{ route('device.switch.id', [
-      'networkswitchId' => $a->id,
-  ]) }}" wire:navigate class="text-primary text-decoration-none">
+        'networkswitchId' => $a->id,
+    ]) }}" class="text-primary text-decoration-none">
                 {{ $a->hostname ?: '-' }}
               </a>
             </td>
@@ -138,8 +138,8 @@
             <td class="font-monospace">
               @if (!empty($a->ip_address))
               <a href="{{ route('device.switch.id', [
-        'networkswitchId' => $a->id,
-    ]) }}" wire:navigate class="text-primary text-decoration-none">
+            'networkswitchId' => $a->id,
+        ]) }}" class="text-primary text-decoration-none">
                 {{ $a->ip_address }}
               </a>
               @else
