@@ -2,61 +2,72 @@
 
 namespace App\Livewire\Auth;
 
-use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
-use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 #[Layout('layouts.blankLayoutLivewire')]
-#[Title('Login Basic - Pages')]
+#[Title('Login')]
 class Login extends Component
 {
-    public string $email = '';
-    public string $password = '';
-    public bool $remember_me = false;
+  public string $email = '';
 
-    protected function rules(): array
-    {
-        return [
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ];
+  public string $password = '';
+
+  public bool $remember_me = false;
+
+  protected function rules(): array
+  {
+    return [
+      'email' => ['required', 'email'],
+      'password' => ['required', 'string'],
+    ];
+  }
+
+  public function mount(): void
+  {
+    if (Auth::check()) {
+      // Jangan gunakan navigate:true karena layout login
+      // dan dashboard berbeda.
+      $this->redirectRoute('dashboard');
+
+      return;
     }
 
-    public function mount(): void
-    {
-        if (Auth::check()) {
-            $this->redirect('/dashboard', navigate: true);
-            return;
-        }
+    $this->email = 'admin@mayapadahospital.com';
+    $this->password = '';
+  }
 
-        $this->fill([
-            'email' => 'admin@mayapadahospital.com',
-            'password' => '',
-        ]);
+  public function login()
+  {
+    $this->validate();
+
+    $authenticated = Auth::attempt(
+      [
+        'email' => trim($this->email),
+        'password' => $this->password,
+      ],
+      $this->remember_me
+    );
+
+    if (!$authenticated) {
+      $this->addError('email', trans('auth.failed'));
+
+      return null;
     }
 
-    public function login(): void
-    {
-        $this->validate();
+    request()->session()->regenerate();
 
-        if (
-            !Auth::attempt(
-                ['email' => $this->email, 'password' => $this->password],
-                $this->remember_me
-            )
-        ) {
-            $this->addError('email', trans('auth.failed'));
-            return;
-        }
+    /*
+     * Laravel redirect biasa akan melakukan perpindahan halaman penuh.
+     * Ini lebih aman setelah login karena layout login dan dashboard berbeda.
+     */
+    return redirect()->intended(route('dashboard'));
+  }
 
-        request()->session()->regenerate();
-
-        $this->redirectIntended('/dashboard', navigate: true);
-    }
-
-    public function render()
-    {
-        return view('livewire.auth.login');
-    }
+  public function render()
+  {
+    return view('livewire.auth.login');
+  }
 }
