@@ -127,8 +127,25 @@
           @forelse($assets as $a)
           <tr>
             <td class="text-uppercase">{{ $a->location }}</td>
-            <td class="fw-semibold" title="{{ $a->remark }}">{{ $a->hostname }}</td>
-            <td class="font-monospace">{{ $a->ip_address ?? '-' }}</td>
+            <td class="fw-semibold" title="{{ $a->remark }}">
+              <a href="{{ route('device.switch.id', [
+      'networkswitchId' => $a->id,
+  ]) }}" wire:navigate class="text-primary text-decoration-none">
+                {{ $a->hostname ?: '-' }}
+              </a>
+            </td>
+
+            <td class="font-monospace">
+              @if (!empty($a->ip_address))
+              <a href="{{ route('device.switch.id', [
+        'networkswitchId' => $a->id,
+    ]) }}" wire:navigate class="text-primary text-decoration-none">
+                {{ $a->ip_address }}
+              </a>
+              @else
+              <span class="text-muted">-</span>
+              @endif
+            </td>
             <td class="font-monospace">{{ $a->mac_address ?? '-' }}</td>
             <td class="font-monospace">{{ $a->serial_number ?? '-' }}</td>
             <td>{{ $a->group ?? '-' }}</td>
