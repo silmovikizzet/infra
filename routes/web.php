@@ -84,7 +84,6 @@ Route::middleware('auth')->group(function () {
   Route::get('/admin/user', UserManagement::class)->name('admin.user');
   Route::get('/admin/credential', CredentialManagement::class)->name('admin.credential');
   Route::get('/device/switch', NetworkSwitch::class)->name('device.switch');
-  Route::get('/device/{id}', NetworkSwitch::class)->name('device.switch');
   Route::get('/device/switch/{networkswitchId}', NetworkSwitchDetail::class)->name('device.switch.id');
   Route::get('/device/firewall', NetworkFirewall::class)->name('device.firewall');
   Route::get('/device/access-point', NetworkAccessPoint::class)->name('device.access-point');
