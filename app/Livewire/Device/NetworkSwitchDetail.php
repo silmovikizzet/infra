@@ -87,7 +87,7 @@ class NetworkSwitchDetail extends Component
       ->with('credential')
       ->whereKey($this->networkswitchId);
 
-    if (!$this->isAdministrator()) {
+    if (!$user->isAdministrator()) {
       $sites = $user->sites()
         ->pluck('site')
         ->map(fn($site) => trim((string) $site))
