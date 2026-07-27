@@ -54,6 +54,7 @@ use App\Livewire\Network\IpSite as IpSite;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\CredentialManagement;
 use App\Livewire\Device\NetworkSwitch;
+use App\Livewire\Device\NetworkSwitchDetail;
 use App\Livewire\Device\NetworkFirewall;
 use App\Livewire\Device\NetworkAccessPoint;
 use App\Livewire\Tools\NetworkSwitchImporter;
@@ -83,6 +84,8 @@ Route::middleware('auth')->group(function () {
   Route::get('/admin/user', UserManagement::class)->name('admin.user');
   Route::get('/admin/credential', CredentialManagement::class)->name('admin.credential');
   Route::get('/device/switch', NetworkSwitch::class)->name('device.switch');
+  Route::get('/device/{id}', NetworkSwitch::class)->name('device.switch');
+  Route::get('/device/switch/{networkswitchId}', NetworkSwitchDetail::class)->name('device.switch.id');
   Route::get('/device/firewall', NetworkFirewall::class)->name('device.firewall');
   Route::get('/device/access-point', NetworkAccessPoint::class)->name('device.access-point');
   Route::get('/tools/switch-importer', NetworkSwitchImporter::class)->name('switch.import');
