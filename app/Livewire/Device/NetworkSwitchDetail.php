@@ -38,6 +38,7 @@ class NetworkSwitchDetail extends Component
   public string $commandPreview = '';
 
   public array $interfaces = [];
+  public array $portMap = [];
 
   public array $interfaceSummary = [
     'total' => 0,
@@ -45,7 +46,64 @@ class NetworkSwitchDetail extends Component
     'down' => 0,
     'disabled' => 0,
   ];
+  private function buildPortMap(): void
+  {
+    $this->portMap = [];
 
+    // Contoh untuk Aruba / 24 port + 4 SFP
+    for ($i = 1; $i <= 24; $i++) {
+      $this->portMap[$i] = [
+        'port_number' => $i,
+        'label' => (string) $i,
+        'type' => 'rj45',
+        'status' => 'down',
+        'name' => null,
+        'description' => null,
+        'speed' => null,
+      ];
+    }
+
+    for ($i = 25; $i <= 28; $i++) {
+      $this->portMap[$i] = [
+        'port_number' => $i,
+        'label' => (string) $i,
+        'type' => 'sfp',
+        'status' => 'down',
+        'name' => null,
+        'description' => null,
+        'speed' => null,
+      ];
+    }
+
+    foreach ($this->interfaces as $interface) {
+      $portNumber = $this->extractPortNumber((string) ($interface['name'] ?? ''));
+
+      if ($portNumber === null || !isset($this->portMap[$portNumber])) {
+        continue;
+      }
+
+      $this->portMap[$portNumber]['status'] = (string) ($interface['status'] ?? 'down');
+      $this->portMap[$portNumber]['name'] = (string) ($interface['name'] ?? '');
+      $this->portMap[$portNumber]['description'] = (string) ($interface['description'] ?? '');
+      $this->portMap[$portNumber]['speed'] = (string) ($interface['speed'] ?? '');
+    }
+  }
+  private function extractPortNumber(string $interfaceName): ?int
+  {
+    $interfaceName = trim($interfaceName);
+
+    // contoh:
+    // GE1/0/1
+    // GigabitEthernet1/0/1
+    // XGE1/0/25
+    // Ten-GigabitEthernet1/0/25
+
+    if (preg_match('/\/(\d+)$/', $interfaceName, $m)) {
+      return (int) $m[1];
+    }
+
+    return null;
+  }
   public string $search = '';
 
   public string $statusFilter = 'all';
@@ -196,6 +254,7 @@ class NetworkSwitchDetail extends Component
       );
 
       $this->applyPayload($payload);
+      $this->buildPortMap();
       $this->interfacesLoaded = true;
     } catch (\Throwable $e) {
       $this->interfaceError = $e->getMessage();
