@@ -5,13 +5,13 @@ namespace App\Services\NetworkSwitch\Parsers;
 final class HpeFlexFabric5940InterfaceParser
 {
   /**
-   * Parse output "display interface brief" Comware 7.
+   * Parse output "display interface brief" pada HPE Comware 7.
    *
    * Status aplikasi:
-   * - UP   => up       (Nyala)
-   * - DOWN => down     (Mati)
-   * - ADM  => disabled (Administratively down)
-   * - Stby => down     (Standby/tidak aktif)
+   * - UP   => up
+   * - DOWN => down
+   * - ADM  => disabled
+   * - Stby => down
    */
   public function parse(string $output): array
   {
@@ -58,7 +58,10 @@ final class HpeFlexFabric5940InterfaceParser
 
     usort(
       $interfaces,
-      fn(array $left, array $right): int => strnatcasecmp($left['name'], $right['name'])
+      fn(array $left, array $right): int => strnatcasecmp(
+        $left['name'],
+        $right['name']
+      )
     );
 
     return $interfaces;
@@ -167,8 +170,12 @@ final class HpeFlexFabric5940InterfaceParser
     return preg_match(
       '/^(?:'
       . 'GE|XGE|FGE|HGE|MGE|'
-      . 'GigabitEthernet|Ten-GigabitEthernet|'
-      . 'Twenty-FiveGigE|FortyGigE|FiftyGigE|HundredGigE'
+      . '10GE|25GE|40GE|50GE|100GE|'
+      . 'GigabitEthernet|MultiGigabitEthernet|'
+      . 'Ten-GigabitEthernet|TenGigabitEthernet|'
+      . 'Twenty-FiveGigE|TwentyFiveGigE|'
+      . 'FortyGigE|FiftyGigE|HundredGigE|'
+      . 'SFP|SFPPlus|SFP28|QSFP|QSFPPlus|QSFP28'
       . ')\d+(?:\/\d+){1,3}(?::\d+)?$/i',
       $name
     ) === 1;
