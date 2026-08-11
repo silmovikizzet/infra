@@ -862,21 +862,21 @@
       </div>
 
 
-      <div class="d-flex flex-column flex-sm-row gap-2">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2 flex-shrink-0">
 
-        <div class="input-group">
-
-          <span class="input-group-text">
+        {{-- SEARCH --}}
+        <div class="input-group flex-nowrap" style="width: 320px; max-width: 100%;">
+          <span class="input-group-text flex-shrink-0">
             <i class="bx bx-search"></i>
           </span>
 
-          <input type="search" class="form-control" style="min-width: 230px;"
-            placeholder="Cari interface atau deskripsi..." wire:model.live.debounce.300ms="search">
-
+          <input type="search" class="form-control" placeholder="Cari interface atau deskripsi..."
+            wire:model.live.debounce.300ms="search">
         </div>
 
 
-        <select class="form-select" style="min-width: 160px;" wire:model.live="statusFilter">
+        {{-- STATUS FILTER --}}
+        <select class="form-select flex-shrink-0" style="width: 160px;" wire:model.live="statusFilter">
           <option value="all">Semua status</option>
           <option value="up">Up</option>
           <option value="down">Down</option>
