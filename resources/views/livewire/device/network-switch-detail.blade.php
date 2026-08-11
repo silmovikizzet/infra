@@ -957,10 +957,6 @@
               <span class="badge {{ $statusClass }}">
                 {{ $statusLabel }}
               </span>
-
-              <div class="text-muted small mt-1">
-                {{ $interface['raw_status'] ?? '-' }}
-              </div>
             </td>
 
 
