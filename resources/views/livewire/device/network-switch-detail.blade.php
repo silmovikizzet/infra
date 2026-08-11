@@ -1084,12 +1084,40 @@
     }
 
     .legend-disabled {
-      background:
-        repeating-linear-gradient(135deg,
-          #555 0,
-          #555 3px,
-          #ccc 3px,
-          #ccc 5px);
+      position: relative;
+
+      background: #595c5f;
+
+      overflow: hidden;
+    }
+
+    .legend-disabled::before,
+    .legend-disabled::after {
+      content: '';
+
+      position: absolute;
+
+      top: 50%;
+      left: 50%;
+
+      width: 85%;
+      height: 2px;
+
+      background: #ff2d2d;
+
+      border-radius: 2px;
+
+      transform-origin: center;
+    }
+
+    .legend-disabled::before {
+      transform:
+        translate(-50%, -50%) rotate(45deg);
+    }
+
+    .legend-disabled::after {
+      transform:
+        translate(-50%, -50%) rotate(-45deg);
     }
 
 
@@ -1432,18 +1460,50 @@
 
 
     /* =========================================================
-         * DISABLED
-         * ========================================================= */
+ * DISABLED
+ * Port abu-abu + silang merah
+ * ========================================================= */
 
     .port-status-disabled .physical-port-hole {
-      background:
-        repeating-linear-gradient(135deg,
-          #55595d 0,
-          #55595d 4px,
-          #c9ccce 4px,
-          #c9ccce 7px);
+      background: #595c5f;
+      overflow: hidden;
     }
 
+    /* garis silang pertama */
+    .port-status-disabled .physical-port-hole::before,
+    .port-status-disabled .physical-port-hole::after {
+      content: '';
+
+      position: absolute;
+
+      top: 50%;
+      left: 50%;
+
+      width: 75%;
+      height: 3px;
+
+      background: #ff2d2d;
+
+      border-radius: 3px;
+
+      box-shadow:
+        0 0 2px rgba(0, 0, 0, .8),
+        0 0 4px rgba(255, 45, 45, .45);
+
+      transform-origin: center;
+    }
+
+    /* \ */
+    .port-status-disabled .physical-port-hole::before {
+      transform:
+        translate(-50%, -50%) rotate(45deg);
+    }
+
+    /* / */
+    .port-status-disabled .physical-port-hole::after {
+      transform:
+        translate(-50%, -50%) rotate(-45deg);
+    }
 
     /* =========================================================
          * SUMMARY
