@@ -1,4 +1,5 @@
 <div wire:init="loadInterfaces">
+
   {{-- =========================================================
   HEADER
   ========================================================== --}}
@@ -58,7 +59,7 @@
 
 
   {{-- =========================================================
-  INITIAL LOADING
+  LOADING
   ========================================================== --}}
   @if ($isLoading && ! $interfacesLoaded)
   <div class="card mb-6">
@@ -79,10 +80,85 @@
 
   @if ($interfacesLoaded)
 
+  @php
+  /*
+  * Interface yang memang tidak perlu ditampilkan.
+  */
+  $ignoredInterfaces = [
+  'MGE0/0/0',
+  'MGE0/0/1',
+  'NULL0',
+  'REG0',
+  ];
+
+
+  /*
+  * Filter table interface.
+  */
+  $displayInterfaces = collect($filteredInterfaces)
+  ->reject(function ($interface) use ($ignoredInterfaces) {
+  $name = strtoupper(
+  trim((string) ($interface['name'] ?? ''))
+  );
+
+  return in_array($name, $ignoredInterfaces, true);
+  })
+  ->values();
+
+
+  /*
+  * Summary berdasarkan interface yang benar-benar
+  * ditampilkan.
+  */
+  $allDisplayInterfaces = collect($interfaces ?? $filteredInterfaces)
+  ->reject(function ($interface) use ($ignoredInterfaces) {
+  $name = strtoupper(
+  trim((string) ($interface['name'] ?? ''))
+  );
+
+  return in_array($name, $ignoredInterfaces, true);
+  })
+  ->values();
+
+
+  $displaySummary = [
+  'total' => $allDisplayInterfaces->count(),
+
+  'up' => $allDisplayInterfaces
+  ->filter(
+  fn ($interface) =>
+  strtolower(
+  (string) ($interface['status'] ?? '')
+  ) === 'up'
+  )
+  ->count(),
+
+  'down' => $allDisplayInterfaces
+  ->filter(
+  fn ($interface) =>
+  strtolower(
+  (string) ($interface['status'] ?? '')
+  ) === 'down'
+  )
+  ->count(),
+
+  'disabled' => $allDisplayInterfaces
+  ->filter(
+  fn ($interface) =>
+  strtolower(
+  (string) ($interface['status'] ?? '')
+  ) === 'disabled'
+  )
+  ->count(),
+  ];
+  @endphp
+
+
   {{-- =====================================================
   METADATA
   ====================================================== --}}
   <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+
     <span class="badge bg-label-primary">
       {{ $switchTypeLabel }}
     </span>
@@ -112,21 +188,24 @@
       Diambil {{ $cachedAt }}
     </span>
     @endif
+
   </div>
 
 
   {{-- =====================================================
-  SWITCH FRONT PANEL
+  PORT FRONT PANEL
   ====================================================== --}}
   <div class="card mb-6">
+
     <div class="card-header d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
+
       <div>
         <h5 class="card-title mb-1">
           Switch Front Panel
         </h5>
 
         <div class="text-muted small">
-          {{ $switchName }} — {{ $switchModel }}
+          Tampilan fisik interface switch
         </div>
       </div>
 
@@ -135,464 +214,508 @@
       <div class="front-panel-legends">
 
         <span class="panel-legend-item">
-          <span class="panel-legend-status status-up"></span>
+          <span class="legend-status legend-up"></span>
           Up
         </span>
 
         <span class="panel-legend-item">
-          <span class="panel-legend-status status-down"></span>
+          <span class="legend-status legend-down"></span>
           Down
         </span>
 
         <span class="panel-legend-item">
-          <span class="panel-legend-status status-disabled"></span>
+          <span class="legend-status legend-disabled"></span>
           Disable
         </span>
 
-
-        <span class="panel-legend-divider"></span>
-
+        <span class="legend-divider"></span>
 
         <span class="panel-legend-item">
-          <span class="panel-legend-port legend-rj45">
-            <span></span>
-          </span>
+          <span class="legend-port legend-rj45"></span>
           GE / UTP
         </span>
 
         <span class="panel-legend-item">
-          <span class="panel-legend-port legend-sfp">
-            <span></span>
-          </span>
-          XGE / SFP+
+          <span class="legend-port legend-sfp"></span>
+          XGE / SFP
         </span>
 
         <span class="panel-legend-item">
-          <span class="panel-legend-port legend-qsfp">
-            <span></span>
-          </span>
+          <span class="legend-port legend-qsfp"></span>
           FGE / QSFP
         </span>
+
       </div>
+
     </div>
 
 
     <div class="card-body">
 
       @if ($switchMembers === [])
+
       <div class="text-center text-muted py-8">
         Interface fisik belum berhasil dipetakan ke front panel.
       </div>
+
       @else
 
-      <div class="stack-rack">
+      <div class="switch-panel-list">
 
         @foreach ($switchMembers as $member)
 
-        <section class="switch-chassis" wire:key="switch-member-{{ $member['member'] }}">
+        @php
+        /*
+        * Filter port member.
+        */
+        $memberSlots = collect($member['slots'] ?? [])
+        ->map(function ($slot) use ($ignoredInterfaces) {
 
-          {{-- MEMBER HEADER --}}
-          <div class="switch-chassis-top">
+        $slot['ports'] = collect($slot['ports'] ?? [])
+        ->reject(function ($port) use ($ignoredInterfaces) {
 
-            <div class="switch-identity">
-              <div class="switch-vendor">
-                HPE
-              </div>
+        $name = strtoupper(
+        trim(
+        (string) (
+        $port['interface_name']
+        ?? $port['name']
+        ?? ''
+        )
+        )
+        );
 
-              <div class="switch-chassis-name">
-                {{ $switchName }}
-              </div>
-            </div>
+        return in_array(
+        $name,
+        $ignoredInterfaces,
+        true
+        );
+        })
+        ->values()
+        ->all();
+
+        return $slot;
+        })
+        ->filter(
+        fn ($slot) =>
+        count($slot['ports'] ?? []) > 0
+        )
+        ->values();
+        @endphp
 
 
-            <div class="switch-member-info">
+        @if ($memberSlots->isNotEmpty())
 
-              <span class="switch-member-badge">
-                Member {{ $member['member'] }}
-              </span>
+        <div class="switch-member-panel" wire:key="switch-member-{{ $member['member'] }}">
 
-              <span>
-                {{ $member['port_count'] }} interface
-              </span>
-
-            </div>
+          @if ($isStacked)
+          <div class="switch-member-title">
+            Switch {{ $member['member'] }}
           </div>
+          @endif
 
 
-          {{-- CHASSIS --}}
-          <div class="switch-chassis-shell">
+          @foreach ($memberSlots as $slot)
 
-            {{-- LEFT --}}
-            <div class="switch-chassis-left">
-
-              <div class="rack-ear rack-ear-left"></div>
-
-
-              <div class="switch-status-block">
-
-                <div class="switch-status-title">
-                  STATUS
-                </div>
-
-                <div class="switch-status-lights">
-                  <span class="chassis-led led-green"></span>
-                  <span class="chassis-led"></span>
-                  <span class="chassis-led"></span>
-                </div>
-
-                <div class="switch-member-number">
-                  {{ $member['member'] }}
-                </div>
-
-              </div>
-            </div>
+          @php
+          /*
+          * Kelompokkan port menjadi pasangan:
+          *
+          * 1 atas
+          * 2 bawah
+          *
+          * 3 atas
+          * 4 bawah
+          *
+          * dst.
+          */
+          $columns = collect($slot['ports'])
+          ->groupBy(
+          fn ($port) =>
+          (int) (
+          $port['grid_column']
+          ?? 1
+          )
+          )
+          ->sortKeys();
+          @endphp
 
 
-            {{-- CENTER --}}
-            <div class="switch-chassis-center">
+          <div class="switch-port-group" wire:key="member-{{ $member['member'] }}-slot-{{ $slot['slot'] }}">
 
-              <div class="switch-vent-strip"></div>
+            <div class="switch-port-row">
+
+              @foreach ($columns as $column => $columnPorts)
+
+              @php
+              $topPort = collect($columnPorts)
+              ->first(
+              fn ($item) =>
+              (int) (
+              $item['grid_row']
+              ?? 1
+              ) === 1
+              );
+
+              $bottomPort = collect($columnPorts)
+              ->first(
+              fn ($item) =>
+              (int) (
+              $item['grid_row']
+              ?? 1
+              ) === 2
+              );
+              @endphp
 
 
-              <div class="switch-slot-scroll">
+              <div class="port-column" wire:key="port-column-{{ $member['member'] }}-{{ $slot['slot'] }}-{{ $column }}">
 
-                <div class="switch-slot-list">
+                {{-- =================================
+                PORT ATAS
+                ================================== --}}
+                <div class="port-position port-position-top">
 
-                  @foreach ($member['slots'] as $slot)
+                  @if ($topPort)
 
                   @php
-                  /*
-                  * Port dikelompokkan berdasarkan grid_column.
-                  *
-                  * Contoh:
-                  *
-                  * Column 1:
-                  * row 1 = port 1
-                  * row 2 = port 2
-                  *
-                  * Column 2:
-                  * row 1 = port 3
-                  * row 2 = port 4
-                  *
-                  * Dengan metode ini QSFP boleh lebih lebar
-                  * tanpa menimpa port berikutnya.
-                  */
-                  $portColumns = collect($slot['ports'])
-                  ->groupBy(
-                  fn ($port) => (int) ($port['grid_column'] ?? 1)
+                  $port = $topPort;
+
+                  $status = strtolower(
+                  (string) (
+                  $port['status']
+                  ?? 'down'
                   )
-                  ->sortKeys();
+                  );
+
+                  if (! in_array(
+                  $status,
+                  [
+                  'up',
+                  'down',
+                  'disabled',
+                  ],
+                  true
+                  )) {
+                  $status = 'down';
+                  }
+
+
+                  $interfaceName = strtoupper(
+                  (string) (
+                  $port['interface_name']
+                  ?? ''
+                  )
+                  );
+
+                  $mediaLabel = strtoupper(
+                  (string) (
+                  $port['media_label']
+                  ?? ''
+                  )
+                  );
+
+                  $rawMediaClass = strtolower(
+                  (string) (
+                  $port['media_class']
+                  ?? ''
+                  )
+                  );
+
+
+                  /*
+                  * FGE / HGE = QSFP
+                  */
+                  if (
+                  str_contains(
+                  $rawMediaClass,
+                  'qsfp'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'FGE'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'HGE'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'QSFP'
+                  )
+                  ||
+                  str_contains(
+                  $mediaLabel,
+                  'QSFP'
+                  )
+                  ) {
+
+                  $mediaClass = 'port-qsfp';
+
+                  /*
+                  * XGE = SFP/SFP+
+                  */
+                  } elseif (
+                  str_contains(
+                  $rawMediaClass,
+                  'sfp'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'XGE'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'SFP'
+                  )
+                  ||
+                  str_contains(
+                  $mediaLabel,
+                  'SFP'
+                  )
+                  ) {
+
+                  $mediaClass = 'port-sfp';
+
+                  /*
+                  * GE = RJ45
+                  */
+                  } else {
+
+                  $mediaClass = 'port-rj45';
+                  }
+
+
+                  $tooltip = implode(
+                  ' | ',
+                  array_filter([
+                  $port['interface_name']
+                  ?? null,
+
+                  $port['media_label']
+                  ?? null,
+
+                  $port['speed']
+                  ?? null,
+
+                  $port['description']
+                  ?? null,
+                  ], static fn ($value) =>
+                  $value !== null
+                  &&
+                  $value !== ''
+                  )
+                  );
                   @endphp
 
 
-                  <div class="physical-slot" wire:key="switch-member-{{ $member['member'] }}-slot-{{ $slot['slot'] }}">
+                  <div class="
+                                                                        physical-port
+                                                                        {{ $mediaClass }}
+                                                                        port-status-{{ $status }}
+                                                                    " title="{{ $tooltip }}"
+                    wire:key="physical-port-{{ $port['key'] }}">
 
-                    <div class="physical-slot-header">
+                    <span class="physical-port-label">
+                      {{ $port['display_number'] }}
+                    </span>
 
-                      <span>
-                        Member {{ $member['member'] }}
-                        /
-                        Slot {{ $slot['slot'] }}
-                      </span>
 
-                      <span>
-                        {{ count($slot['ports']) }} port
-                      </span>
+                    <span class="physical-port-frame">
 
-                    </div>
+                      <span class="physical-port-hole"></span>
 
-
-                    <div class="physical-port-scroll">
-
-                      <div class="physical-port-grid">
-
-                        @foreach ($portColumns as $column => $columnPorts)
-
-                        @php
-                        $topPort = collect($columnPorts)
-                        ->first(
-                        fn ($item) =>
-                        (int) ($item['grid_row'] ?? 1) === 1
-                        );
-
-                        $bottomPort = collect($columnPorts)
-                        ->first(
-                        fn ($item) =>
-                        (int) ($item['grid_row'] ?? 1) === 2
-                        );
-                        @endphp
-
-
-                        <div class="physical-port-pair"
-                          wire:key="port-pair-{{ $member['member'] }}-{{ $slot['slot'] }}-{{ $column }}">
-
-                          {{-- =========================================
-                          TOP PORT
-                          ========================================== --}}
-                          <div class="physical-port-position position-top">
-
-                            @if ($topPort)
-
-                            @php
-                            $port = $topPort;
-
-                            $portStatus = strtolower(
-                            (string) ($port['status'] ?? 'down')
-                            );
-
-                            if (! in_array(
-                            $portStatus,
-                            ['up', 'down', 'disabled'],
-                            true
-                            )) {
-                            $portStatus = 'down';
-                            }
-
-
-                            /*
-                            * Normalisasi tipe media.
-                            *
-                            * Prioritas:
-                            * FGE/HGE/QSFP => QSFP
-                            * XGE/SFP => SFP
-                            * GE => RJ45
-                            */
-                            $interfaceName = strtoupper(
-                            (string) ($port['interface_name'] ?? '')
-                            );
-
-                            $mediaLabel = strtoupper(
-                            (string) ($port['media_label'] ?? '')
-                            );
-
-                            $rawMediaClass = strtolower(
-                            (string) ($port['media_class'] ?? '')
-                            );
-
-
-                            if (
-                            str_contains($rawMediaClass, 'qsfp') ||
-                            str_contains($interfaceName, 'FGE') ||
-                            str_contains($interfaceName, 'HGE') ||
-                            str_contains($interfaceName, 'QSFP') ||
-                            str_contains($mediaLabel, 'QSFP')
-                            ) {
-                            $mediaClass = 'port-qsfp';
-                            } elseif (
-                            str_contains($rawMediaClass, 'sfp') ||
-                            str_contains($interfaceName, 'XGE') ||
-                            str_contains($interfaceName, 'SFP') ||
-                            str_contains($mediaLabel, 'SFP')
-                            ) {
-                            $mediaClass = 'port-sfp';
-                            } else {
-                            $mediaClass = 'port-rj45';
-                            }
-
-
-                            $tooltip = implode(
-                            ' | ',
-                            array_filter([
-                            $port['interface_name'] ?? null,
-                            $port['media_label'] ?? null,
-                            $port['speed'] ?? null,
-                            $port['description'] ?? null,
-                            ], static fn ($value) =>
-                            $value !== null &&
-                            $value !== ''
-                            )
-                            );
-                            @endphp
-
-
-                            <div class="physical-port {{ $mediaClass }} port-status-{{ $portStatus }}"
-                              title="{{ $tooltip }}" wire:key="physical-port-{{ $port['key'] }}">
-
-                              <span class="physical-port-label">
-                                {{ $port['display_number'] }}
-                              </span>
-
-
-                              <span class="physical-port-cage">
-
-                                <span class="physical-port-core"></span>
-
-                                <span class="physical-port-led"></span>
-
-                              </span>
-
-                            </div>
-
-                            @else
-
-                            <div class="physical-port-empty"></div>
-
-                            @endif
-
-                          </div>
-
-
-                          {{-- =========================================
-                          BOTTOM PORT
-                          ========================================== --}}
-                          <div class="physical-port-position position-bottom">
-
-                            @if ($bottomPort)
-
-                            @php
-                            $port = $bottomPort;
-
-                            $portStatus = strtolower(
-                            (string) ($port['status'] ?? 'down')
-                            );
-
-                            if (! in_array(
-                            $portStatus,
-                            ['up', 'down', 'disabled'],
-                            true
-                            )) {
-                            $portStatus = 'down';
-                            }
-
-
-                            $interfaceName = strtoupper(
-                            (string) ($port['interface_name'] ?? '')
-                            );
-
-                            $mediaLabel = strtoupper(
-                            (string) ($port['media_label'] ?? '')
-                            );
-
-                            $rawMediaClass = strtolower(
-                            (string) ($port['media_class'] ?? '')
-                            );
-
-
-                            if (
-                            str_contains($rawMediaClass, 'qsfp') ||
-                            str_contains($interfaceName, 'FGE') ||
-                            str_contains($interfaceName, 'HGE') ||
-                            str_contains($interfaceName, 'QSFP') ||
-                            str_contains($mediaLabel, 'QSFP')
-                            ) {
-                            $mediaClass = 'port-qsfp';
-                            } elseif (
-                            str_contains($rawMediaClass, 'sfp') ||
-                            str_contains($interfaceName, 'XGE') ||
-                            str_contains($interfaceName, 'SFP') ||
-                            str_contains($mediaLabel, 'SFP')
-                            ) {
-                            $mediaClass = 'port-sfp';
-                            } else {
-                            $mediaClass = 'port-rj45';
-                            }
-
-
-                            $tooltip = implode(
-                            ' | ',
-                            array_filter([
-                            $port['interface_name'] ?? null,
-                            $port['media_label'] ?? null,
-                            $port['speed'] ?? null,
-                            $port['description'] ?? null,
-                            ], static fn ($value) =>
-                            $value !== null &&
-                            $value !== ''
-                            )
-                            );
-                            @endphp
-
-
-                            <div class="physical-port {{ $mediaClass }} port-status-{{ $portStatus }}"
-                              title="{{ $tooltip }}" wire:key="physical-port-{{ $port['key'] }}">
-
-                              <span class="physical-port-label">
-                                {{ $port['display_number'] }}
-                              </span>
-
-
-                              <span class="physical-port-cage">
-
-                                <span class="physical-port-core"></span>
-
-                                <span class="physical-port-led"></span>
-
-                              </span>
-
-                            </div>
-
-                            @else
-
-                            <div class="physical-port-empty"></div>
-
-                            @endif
-
-                          </div>
-
-                        </div>
-
-                        @endforeach
-
-                      </div>
-
-                    </div>
+                    </span>
 
                   </div>
 
-                  @endforeach
+                  @else
+
+                  <div class="physical-port-placeholder"></div>
+
+                  @endif
+
+                </div>
+
+
+                {{-- =================================
+                PORT BAWAH
+                ================================== --}}
+                <div class="port-position port-position-bottom">
+
+                  @if ($bottomPort)
+
+                  @php
+                  $port = $bottomPort;
+
+                  $status = strtolower(
+                  (string) (
+                  $port['status']
+                  ?? 'down'
+                  )
+                  );
+
+                  if (! in_array(
+                  $status,
+                  [
+                  'up',
+                  'down',
+                  'disabled',
+                  ],
+                  true
+                  )) {
+                  $status = 'down';
+                  }
+
+
+                  $interfaceName = strtoupper(
+                  (string) (
+                  $port['interface_name']
+                  ?? ''
+                  )
+                  );
+
+                  $mediaLabel = strtoupper(
+                  (string) (
+                  $port['media_label']
+                  ?? ''
+                  )
+                  );
+
+                  $rawMediaClass = strtolower(
+                  (string) (
+                  $port['media_class']
+                  ?? ''
+                  )
+                  );
+
+
+                  if (
+                  str_contains(
+                  $rawMediaClass,
+                  'qsfp'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'FGE'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'HGE'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'QSFP'
+                  )
+                  ||
+                  str_contains(
+                  $mediaLabel,
+                  'QSFP'
+                  )
+                  ) {
+
+                  $mediaClass = 'port-qsfp';
+
+                  } elseif (
+                  str_contains(
+                  $rawMediaClass,
+                  'sfp'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'XGE'
+                  )
+                  ||
+                  str_contains(
+                  $interfaceName,
+                  'SFP'
+                  )
+                  ||
+                  str_contains(
+                  $mediaLabel,
+                  'SFP'
+                  )
+                  ) {
+
+                  $mediaClass = 'port-sfp';
+
+                  } else {
+
+                  $mediaClass = 'port-rj45';
+                  }
+
+
+                  $tooltip = implode(
+                  ' | ',
+                  array_filter([
+                  $port['interface_name']
+                  ?? null,
+
+                  $port['media_label']
+                  ?? null,
+
+                  $port['speed']
+                  ?? null,
+
+                  $port['description']
+                  ?? null,
+                  ], static fn ($value) =>
+                  $value !== null
+                  &&
+                  $value !== ''
+                  )
+                  );
+                  @endphp
+
+
+                  <div class="
+                                                                        physical-port
+                                                                        {{ $mediaClass }}
+                                                                        port-status-{{ $status }}
+                                                                    " title="{{ $tooltip }}"
+                    wire:key="physical-port-{{ $port['key'] }}">
+
+                    <span class="physical-port-label">
+                      {{ $port['display_number'] }}
+                    </span>
+
+
+                    <span class="physical-port-frame">
+
+                      <span class="physical-port-hole"></span>
+
+                    </span>
+
+                  </div>
+
+                  @else
+
+                  <div class="physical-port-placeholder"></div>
+
+                  @endif
 
                 </div>
 
               </div>
 
-            </div>
-
-
-            {{-- RIGHT --}}
-            <div class="switch-chassis-right">
-
-              <div class="switch-model-text">
-                {{ $switchModel }}
-              </div>
-
-              <div class="switch-host-text">
-                {{ $routerHost ?: '-' }}
-              </div>
-
-              <div class="rack-ear rack-ear-right"></div>
+              @endforeach
 
             </div>
 
           </div>
 
+          @endforeach
 
-          {{-- MEMBER SUMMARY --}}
-          <div class="switch-member-summary">
+        </div>
 
-            <span>
-              <strong class="text-success">
-                {{ $member['up_count'] }}
-              </strong>
-              up
-            </span>
-
-            <span>
-              <strong class="text-danger">
-                {{ $member['down_count'] }}
-              </strong>
-              down
-            </span>
-
-            <span>
-              <strong class="text-secondary">
-                {{ $member['disabled_count'] }}
-              </strong>
-              disable
-            </span>
-
-          </div>
-
-        </section>
+        @endif
 
         @endforeach
 
@@ -601,6 +724,7 @@
       @endif
 
     </div>
+
   </div>
 
 
@@ -609,21 +733,11 @@
   ====================================================== --}}
   <div class="row g-4 mb-6">
 
-    {{-- ALL --}}
     <div class="col-6 col-xl-3">
-
-      <button type="button" class="
-                        card
-                        summary-card
-                        h-100
-                        w-100
-                        border-0
-                        text-start
-                        {{ $statusFilter === 'all' ? 'summary-card-active' : '' }}
-                    " wire:click="$set('statusFilter', 'all')">
-
+      <button type="button"
+        class="card summary-card h-100 w-100 border-0 text-start {{ $statusFilter === 'all' ? 'summary-card-active' : '' }}"
+        wire:click="$set('statusFilter', 'all')">
         <div class="card-body">
-
           <div class="d-flex justify-content-between align-items-center">
 
             <div>
@@ -632,39 +746,25 @@
               </div>
 
               <div class="fs-3 fw-bold mt-1">
-                {{ $interfaceSummary['total'] ?? 0 }}
+                {{ $displaySummary['total'] }}
               </div>
             </div>
-
 
             <span class="avatar-initial rounded bg-label-primary p-3">
               <i class="bx bx-network-chart fs-4"></i>
             </span>
 
           </div>
-
         </div>
-
       </button>
-
     </div>
 
 
-    {{-- UP --}}
     <div class="col-6 col-xl-3">
-
-      <button type="button" class="
-                        card
-                        summary-card
-                        h-100
-                        w-100
-                        border-0
-                        text-start
-                        {{ $statusFilter === 'up' ? 'summary-card-active' : '' }}
-                    " wire:click="$set('statusFilter', 'up')">
-
+      <button type="button"
+        class="card summary-card h-100 w-100 border-0 text-start {{ $statusFilter === 'up' ? 'summary-card-active' : '' }}"
+        wire:click="$set('statusFilter', 'up')">
         <div class="card-body">
-
           <div class="d-flex justify-content-between align-items-center">
 
             <div>
@@ -673,39 +773,25 @@
               </div>
 
               <div class="fs-3 fw-bold text-success mt-1">
-                {{ $interfaceSummary['up'] ?? 0 }}
+                {{ $displaySummary['up'] }}
               </div>
             </div>
-
 
             <span class="avatar-initial rounded bg-label-success p-3">
               <i class="bx bx-check-circle fs-4"></i>
             </span>
 
           </div>
-
         </div>
-
       </button>
-
     </div>
 
 
-    {{-- DOWN --}}
     <div class="col-6 col-xl-3">
-
-      <button type="button" class="
-                        card
-                        summary-card
-                        h-100
-                        w-100
-                        border-0
-                        text-start
-                        {{ $statusFilter === 'down' ? 'summary-card-active' : '' }}
-                    " wire:click="$set('statusFilter', 'down')">
-
+      <button type="button"
+        class="card summary-card h-100 w-100 border-0 text-start {{ $statusFilter === 'down' ? 'summary-card-active' : '' }}"
+        wire:click="$set('statusFilter', 'down')">
         <div class="card-body">
-
           <div class="d-flex justify-content-between align-items-center">
 
             <div>
@@ -714,39 +800,25 @@
               </div>
 
               <div class="fs-3 fw-bold text-danger mt-1">
-                {{ $interfaceSummary['down'] ?? 0 }}
+                {{ $displaySummary['down'] }}
               </div>
             </div>
-
 
             <span class="avatar-initial rounded bg-label-danger p-3">
               <i class="bx bx-x-circle fs-4"></i>
             </span>
 
           </div>
-
         </div>
-
       </button>
-
     </div>
 
 
-    {{-- DISABLED --}}
     <div class="col-6 col-xl-3">
-
-      <button type="button" class="
-                        card
-                        summary-card
-                        h-100
-                        w-100
-                        border-0
-                        text-start
-                        {{ $statusFilter === 'disabled' ? 'summary-card-active' : '' }}
-                    " wire:click="$set('statusFilter', 'disabled')">
-
+      <button type="button"
+        class="card summary-card h-100 w-100 border-0 text-start {{ $statusFilter === 'disabled' ? 'summary-card-active' : '' }}"
+        wire:click="$set('statusFilter', 'disabled')">
         <div class="card-body">
-
           <div class="d-flex justify-content-between align-items-center">
 
             <div>
@@ -755,28 +827,24 @@
               </div>
 
               <div class="fs-3 fw-bold text-secondary mt-1">
-                {{ $interfaceSummary['disabled'] ?? 0 }}
+                {{ $displaySummary['disabled'] }}
               </div>
             </div>
-
 
             <span class="avatar-initial rounded bg-label-secondary p-3">
               <i class="bx bx-block fs-4"></i>
             </span>
 
           </div>
-
         </div>
-
       </button>
-
     </div>
 
   </div>
 
 
   {{-- =====================================================
-  INTERFACE TABLE
+  TABLE
   ====================================================== --}}
   <div class="card">
 
@@ -809,24 +877,14 @@
 
 
         <select class="form-select" style="min-width: 160px;" wire:model.live="statusFilter">
-          <option value="all">
-            Semua status
-          </option>
-
-          <option value="up">
-            Up
-          </option>
-
-          <option value="down">
-            Down
-          </option>
-
-          <option value="disabled">
-            Disable
-          </option>
+          <option value="all">Semua status</option>
+          <option value="up">Up</option>
+          <option value="down">Down</option>
+          <option value="disabled">Disable</option>
         </select>
 
       </div>
+
     </div>
 
 
@@ -850,7 +908,7 @@
 
         <tbody>
 
-          @forelse ($filteredInterfaces as $interface)
+          @forelse ($displayInterfaces as $interface)
 
           @php
           $status = strtolower(
@@ -859,7 +917,11 @@
 
           $status = in_array(
           $status,
-          ['up', 'down', 'disabled'],
+          [
+          'up',
+          'down',
+          'disabled',
+          ],
           true
           )
           ? $status
@@ -892,7 +954,6 @@
 
 
             <td>
-
               <span class="badge {{ $statusClass }}">
                 {{ $statusLabel }}
               </span>
@@ -900,7 +961,6 @@
               <div class="text-muted small mt-1">
                 {{ $interface['raw_status'] ?? '-' }}
               </div>
-
             </td>
 
 
@@ -952,11 +1012,9 @@
           @empty
 
           <tr>
-
             <td colspan="8" class="text-center py-8 text-muted">
               Tidak ada interface yang sesuai filter.
             </td>
-
           </tr>
 
           @endforelse
@@ -975,20 +1033,23 @@
 
   <style>
     /* =========================================================
-         * FRONT PANEL LEGEND
+         * LEGEND
          * ========================================================= */
 
     .front-panel-legends {
       display: flex;
       align-items: center;
       justify-content: flex-end;
+
       gap: 12px;
+
       flex-wrap: wrap;
     }
 
     .panel-legend-item {
       display: inline-flex;
       align-items: center;
+
       gap: 6px;
 
       color: #69707a;
@@ -998,101 +1059,83 @@
       white-space: nowrap;
     }
 
-    .panel-legend-divider {
+    .legend-divider {
       width: 1px;
       height: 18px;
 
       background: #d9dde3;
     }
 
+    .legend-status {
+      width: 11px;
+      height: 11px;
 
-    /* =========================================================
-         * STATUS LEGEND
-         * ========================================================= */
+      border: 1px solid #1e2226;
 
-    .panel-legend-status {
-      display: inline-block;
-
-      width: 10px;
-      height: 10px;
-
-      border-radius: 50%;
+      border-radius: 2px;
     }
 
-    .status-up {
-      background: #20c75a;
-
-      box-shadow:
-        0 0 6px rgba(32, 199, 90, .65);
+    .legend-up {
+      background: #28ca61;
     }
 
-    .status-down {
-      background: #55595e;
+    .legend-down {
+      background: #595d60;
     }
 
-    .status-disabled {
+    .legend-disabled {
       background:
         repeating-linear-gradient(135deg,
-          #85898e 0,
-          #85898e 3px,
-          #c8cacc 3px,
-          #c8cacc 5px);
+          #555 0,
+          #555 3px,
+          #ccc 3px,
+          #ccc 5px);
     }
 
 
-    /* =========================================================
-         * PORT LEGEND
-         * ========================================================= */
-
-    .panel-legend-port {
+    .legend-port {
       position: relative;
 
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
 
-      height: 18px;
+      height: 19px;
 
       padding: 2px;
 
-      background: #d6d8da;
+      background: #dadcde;
 
-      border: 1px solid #7d8185;
-
-      border-radius: 1px;
-
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, .5);
+      border: 1px solid #83878b;
     }
 
-    .panel-legend-port>span {
-      display: block;
+    .legend-port::after {
+      content: '';
 
-      width: 100%;
-      height: 100%;
+      position: absolute;
 
-      background: #55595e;
+      inset: 3px;
 
-      border: 1px solid #282b2e;
+      background: #55595d;
+
+      border: 1px solid #17191b;
     }
 
     .legend-rj45 {
-      width: 23px;
+      width: 24px;
     }
 
-    .legend-rj45>span {
+    .legend-rj45::after {
       clip-path: polygon(0 0,
           100% 0,
-          100% 72%,
-          83% 72%,
-          83% 87%,
-          65% 87%,
-          65% 100%,
-          35% 100%,
-          35% 87%,
-          17% 87%,
-          17% 72%,
-          0 72%);
+          100% 70%,
+          84% 70%,
+          84% 85%,
+          67% 85%,
+          67% 100%,
+          33% 100%,
+          33% 85%,
+          16% 85%,
+          16% 70%,
+          0 70%);
     }
 
     .legend-sfp {
@@ -1100,353 +1143,61 @@
     }
 
     .legend-qsfp {
-      width: 35px;
+      width: 38px;
     }
 
 
     /* =========================================================
-         * STACK
+         * PANEL
          * ========================================================= */
 
-    .stack-rack {
+    .switch-panel-list {
       display: flex;
       flex-direction: column;
 
-      gap: 22px;
-    }
-
-    .switch-chassis {
-      min-width: 0;
+      gap: 26px;
     }
 
 
     /* =========================================================
-         * CHASSIS HEADER
+         * STACK MEMBER
          * ========================================================= */
 
-    .switch-chassis-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      gap: 16px;
-
-      margin-bottom: 8px;
-
-      padding: 0 4px;
+    .switch-member-panel {
+      min-width: 0;
     }
 
-    .switch-identity {
-      display: flex;
-      align-items: baseline;
+    .switch-member-title {
+      margin-bottom: 10px;
 
-      gap: 10px;
-    }
-
-    .switch-vendor {
-      color: #23272d;
-
-      font-size: 1rem;
-      font-weight: 800;
-
-      letter-spacing: .06em;
-    }
-
-    .switch-chassis-name {
-      color: #737b85;
+      color: #56606a;
 
       font-size: .8rem;
-    }
-
-    .switch-member-info {
-      display: flex;
-      align-items: center;
-
-      gap: 10px;
-
-      color: #737b85;
-
-      font-size: .75rem;
-    }
-
-    .switch-member-badge {
-      padding: 4px 9px;
-
-      color: #fff;
-
-      background: #3e454e;
-
-      border-radius: 999px;
-
       font-weight: 700;
     }
 
 
     /* =========================================================
-         * CHASSIS
+         * SLOT / GROUP
          * ========================================================= */
 
-    .switch-chassis-shell {
-      position: relative;
-
-      display: grid;
-
-      grid-template-columns:
-        95px minmax(760px, 1fr) 145px;
-
-      min-width: 1050px;
-      min-height: 178px;
-
-      overflow: hidden;
-
-      background:
-        linear-gradient(180deg,
-          #35393f 0,
-          #272b30 35%,
-          #1d2024 100%);
-
-      border: 1px solid #0d0f11;
-
-      border-radius: 7px;
-
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .09),
-        inset 0 -1px 0 rgba(0, 0, 0, .8),
-        0 8px 18px rgba(20, 24, 30, .18);
-    }
-
-    .switch-chassis-left,
-    .switch-chassis-right {
-      position: relative;
-
-      display: flex;
-
-      align-items: center;
-      justify-content: center;
-
-      padding: 18px 12px;
-    }
-
-    .switch-chassis-center {
-      min-width: 0;
-
-      padding: 18px 0 16px;
-    }
-
-
-    /* =========================================================
-         * RACK EAR
-         * ========================================================= */
-
-    .rack-ear {
-      position: absolute;
-
-      top: 12px;
-      bottom: 12px;
-
-      width: 13px;
-
-      background: #16191d;
-
-      border: 1px solid #08090b;
-    }
-
-    .rack-ear::before,
-    .rack-ear::after {
-      content: '';
-
-      position: absolute;
-
-      left: 50%;
-
-      width: 5px;
-      height: 11px;
-
-      transform: translateX(-50%);
-
-      background: #060708;
-
-      border-radius: 5px;
-    }
-
-    .rack-ear::before {
-      top: 14px;
-    }
-
-    .rack-ear::after {
-      bottom: 14px;
-    }
-
-    .rack-ear-left {
-      left: 7px;
-    }
-
-    .rack-ear-right {
-      right: 7px;
-    }
-
-
-    /* =========================================================
-         * SWITCH STATUS
-         * ========================================================= */
-
-    .switch-status-block {
-      display: flex;
-      flex-direction: column;
-
-      align-items: center;
-
-      gap: 9px;
-
-      color: #9ca3ab;
-    }
-
-    .switch-status-title {
-      font-size: 8px;
-
-      letter-spacing: .14em;
-    }
-
-    .switch-status-lights {
-      display: flex;
-
-      gap: 5px;
-    }
-
-    .chassis-led {
-      width: 6px;
-      height: 6px;
-
-      background: #555c65;
-
-      border: 1px solid #111317;
-
-      border-radius: 50%;
-    }
-
-    .chassis-led.led-green {
-      background: #5cff7f;
-
-      box-shadow:
-        0 0 7px rgba(92, 255, 127, .75);
-    }
-
-    .switch-member-number {
-      display: grid;
-
-      width: 28px;
-      height: 28px;
-
-      place-items: center;
-
-      color: #e6e8eb;
-
-      background: #111419;
-
-      border: 1px solid #464d56;
-
-      border-radius: 4px;
-
-      font-size: .75rem;
-      font-weight: 800;
-    }
-
-
-    /* =========================================================
-         * VENT
-         * ========================================================= */
-
-    .switch-vent-strip {
-      height: 16px;
-
-      margin-bottom: 8px;
-
-      background:
-        radial-gradient(circle,
-          #08090b 0 2px,
-          transparent 2.2px) 0 0 / 10px 8px;
-
-      opacity: .9;
-    }
-
-
-    /* =========================================================
-         * SLOTS
-         * ========================================================= */
-
-    .switch-slot-scroll {
+    .switch-port-group {
       width: 100%;
 
       overflow-x: auto;
       overflow-y: hidden;
 
-      padding-bottom: 3px;
-    }
-
-    .switch-slot-list {
-      display: flex;
-
-      align-items: stretch;
-
-      gap: 14px;
-
-      width: max-content;
-      min-width: 100%;
-    }
-
-    .physical-slot {
-      flex: 0 0 auto;
-
       padding:
-        8px 10px 10px;
+        20px 10px 20px;
 
-      background: #111419;
+      background: #f3f4f5;
 
-      border: 1px solid #4d535b;
+      border: 1px solid #c7cbcf;
 
-      border-radius: 3px;
-
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, .025);
+      border-radius: 2px;
     }
 
-    .physical-slot-header {
-      display: flex;
-
-      justify-content: space-between;
-
-      gap: 28px;
-
-      margin-bottom: 9px;
-
-      color: #9ea5ad;
-
-      font-size: 8px;
-
-      letter-spacing: .04em;
-
-      text-transform: uppercase;
-    }
-
-
-    /* =========================================================
-         * PORT AREA
-         * ========================================================= */
-
-    .physical-port-scroll {
-      overflow: visible;
-
-      padding:
-        13px 3px 13px;
-    }
-
-    /*
-         * Bukan CSS grid fixed-width lagi.
-         *
-         * Sekarang setiap pasangan port menjadi satu kolom FLEX.
-         * Jadi kalau QSFP lebih lebar, kolom otomatis ikut melebar.
-         */
-    .physical-port-grid {
+    .switch-port-row {
       display: flex;
 
       align-items: flex-start;
@@ -1454,10 +1205,24 @@
       gap: 5px;
 
       width: max-content;
+
       min-width: max-content;
     }
 
-    .physical-port-pair {
+
+    /* =========================================================
+         * PORT COLUMN
+         *
+         * 1
+         * 2
+         *
+         * lalu
+         *
+         * 3
+         * 4
+         * ========================================================= */
+
+    .port-column {
       display: flex;
 
       flex: 0 0 auto;
@@ -1468,16 +1233,16 @@
       gap: 7px;
     }
 
-    .physical-port-position {
+    .port-position {
       display: flex;
 
       align-items: center;
       justify-content: center;
 
-      min-height: 40px;
+      min-height: 42px;
     }
 
-    .physical-port-empty {
+    .physical-port-placeholder {
       width: 48px;
       height: 38px;
 
@@ -1486,7 +1251,7 @@
 
 
     /* =========================================================
-         * PORT BASE
+         * PORT
          * ========================================================= */
 
     .physical-port {
@@ -1499,21 +1264,21 @@
       cursor: help;
 
       transition:
-        transform .14s ease,
-        filter .14s ease;
+        transform .12s ease,
+        filter .12s ease;
     }
 
     .physical-port:hover {
-      z-index: 10;
+      z-index: 20;
 
-      transform: scale(1.06);
+      transform: scale(1.05);
 
-      filter: brightness(1.08);
+      filter: brightness(1.05);
     }
 
 
     /* =========================================================
-         * PORT LABEL
+         * NUMBER
          * ========================================================= */
 
     .physical-port-label {
@@ -1521,13 +1286,13 @@
 
       left: 50%;
 
-      z-index: 10;
+      z-index: 5;
 
       transform: translateX(-50%);
 
-      color: #d8dde2;
+      color: #52585e;
 
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 700;
 
       line-height: 1;
@@ -1537,20 +1302,20 @@
       pointer-events: none;
     }
 
-    .position-top .physical-port-label {
-      top: -11px;
+    .port-position-top .physical-port-label {
+      top: -12px;
     }
 
-    .position-bottom .physical-port-label {
-      bottom: -11px;
+    .port-position-bottom .physical-port-label {
+      bottom: -12px;
     }
 
 
     /* =========================================================
-         * COMMON PORT CAGE
+         * OUTER PORT FRAME
          * ========================================================= */
 
-    .physical-port-cage {
+    .physical-port-frame {
       position: absolute;
 
       inset: 0;
@@ -1561,81 +1326,50 @@
 
       background:
         linear-gradient(180deg,
-          #e6e8e9 0%,
-          #b9bdc0 48%,
-          #8f9498 100%);
+          #f0f1f2 0%,
+          #d4d6d8 45%,
+          #afb3b6 100%);
 
-      border: 1px solid #6e7479;
-
-      border-radius: 1px;
+      border: 1px solid #878c90;
 
       box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, .65),
-        0 1px 2px rgba(0, 0, 0, .75);
-    }
-
-    .physical-port-core {
-      position: absolute;
-
-      display: block;
-
-      background: #575b5f;
-
-      border: 2px solid #17191c;
-
-      box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, .12);
-    }
-
-    .physical-port-led {
-      position: absolute;
-
-      z-index: 5;
-
-      width: 4px;
-      height: 4px;
-
-      background: #555b61;
-
-      border: 1px solid #17191c;
-
-      border-radius: 50%;
+        inset 0 0 0 1px rgba(255, 255, 255, .8),
+        0 1px 1px rgba(0, 0, 0, .2);
     }
 
 
     /* =========================================================
-         * RJ45 / UTP
-         *
-         * GE
+         * INNER PORT
+         * ========================================================= */
+
+    .physical-port-hole {
+      position: absolute;
+
+      inset: 4px;
+
+      display: block;
+
+      background: #595d60;
+
+      border: 2px solid #171a1c;
+    }
+
+
+    /* =========================================================
+         * GE / RJ45 / UTP
          * ========================================================= */
 
     .port-rj45 {
       width: 48px;
     }
 
-    .port-rj45 .physical-port-cage {
-      padding: 4px;
-    }
-
-    /*
-         * RJ45 socket:
-         *
-         * ┌────────────┐
-         * │            │
-         * │            │
-         * └──┐      ┌──┘
-         *    └──────┘
-         */
-    .port-rj45 .physical-port-core {
-      inset:
-        4px 4px 4px 4px;
-
+    .port-rj45 .physical-port-hole {
       clip-path: polygon(0 0,
           100% 0,
 
-          100% 70%,
+          100% 69%,
 
-          86% 70%,
+          86% 69%,
           86% 84%,
 
           68% 84%,
@@ -1645,200 +1379,74 @@
           32% 84%,
 
           14% 84%,
-          14% 70%,
+          14% 69%,
 
-          0 70%);
-    }
-
-    .port-rj45 .physical-port-led {
-      top: 3px;
-      right: 3px;
+          0 69%);
     }
 
 
     /* =========================================================
-         * SFP / SFP+
-         *
-         * XGE
+         * XGE / SFP
          * ========================================================= */
 
     .port-sfp {
       width: 48px;
     }
 
-    .port-sfp .physical-port-cage {
-      background:
-        linear-gradient(180deg,
-          #e7e8e9 0%,
-          #c0c3c5 48%,
-          #969a9d 100%);
-    }
-
-    .port-sfp .physical-port-core {
-      inset:
-        4px 4px 4px 4px;
-
+    .port-sfp .physical-port-hole {
       clip-path: none;
-    }
-
-    .port-sfp .physical-port-led {
-      top: 3px;
-      right: 3px;
     }
 
 
     /* =========================================================
-         * QSFP
+         * FGE / HGE / QSFP
          *
-         * FGE / HGE
-         *
-         * SAMA DENGAN SFP
-         * TAPI LEBIH LEBAR
+         * SFP YANG DILEBARKAN
          * ========================================================= */
 
     .port-qsfp {
       width: 76px;
     }
 
-    .port-qsfp .physical-port-cage {
-      background:
-        linear-gradient(180deg,
-          #e7e8e9 0%,
-          #c0c3c5 48%,
-          #969a9d 100%);
-    }
-
-    .port-qsfp .physical-port-core {
-      inset:
-        4px 4px 4px 4px;
-
+    .port-qsfp .physical-port-hole {
       clip-path: none;
     }
 
-    .port-qsfp .physical-port-led {
-      top: 3px;
-      right: 3px;
+
+    /* =========================================================
+         * UP
+         * ========================================================= */
+
+    .port-status-up .physical-port-hole {
+      background: #25c95d;
     }
 
 
     /* =========================================================
-         * STATUS: UP
-         *
-         * Seperti gambar referensi:
-         * isi port menjadi HIJAU.
+         * DOWN
          * ========================================================= */
 
-    .port-status-up .physical-port-core {
-      background: #22c95a;
-
-      border-color: #111713;
-
-      box-shadow:
-        inset 0 1px 2px rgba(255, 255, 255, .22);
-    }
-
-    .port-status-up .physical-port-led {
-      background: #82ff9c;
-
-      border-color: #16933e;
-
-      box-shadow:
-        0 0 5px rgba(100, 255, 137, .9);
+    .port-status-down .physical-port-hole {
+      background: #595c5f;
     }
 
 
     /* =========================================================
-         * STATUS: DOWN
+         * DISABLED
          * ========================================================= */
 
-    .port-status-down .physical-port-core {
-      background: #57595b;
-    }
-
-    .port-status-down .physical-port-led {
-      background: #4c5054;
-    }
-
-
-    /* =========================================================
-         * STATUS: DISABLED
-         * ========================================================= */
-
-    .port-status-disabled .physical-port-core {
+    .port-status-disabled .physical-port-hole {
       background:
         repeating-linear-gradient(135deg,
-          #595d61 0,
-          #595d61 4px,
-          #d1d3d5 4px,
-          #d1d3d5 7px);
-    }
-
-    .port-status-disabled .physical-port-led {
-      background: #8b9095;
+          #55595d 0,
+          #55595d 4px,
+          #c9ccce 4px,
+          #c9ccce 7px);
     }
 
 
     /* =========================================================
-         * RIGHT SIDE
-         * ========================================================= */
-
-    .switch-chassis-right {
-      flex-direction: column;
-
-      align-items: flex-end;
-      justify-content: center;
-
-      padding-right: 28px;
-
-      color: #aab0b7;
-
-      text-align: right;
-    }
-
-    .switch-model-text {
-      max-width: 110px;
-
-      font-size: .72rem;
-      font-weight: 700;
-
-      line-height: 1.35;
-    }
-
-    .switch-host-text {
-      margin-top: 6px;
-
-      color: #747c86;
-
-      font-family: monospace;
-
-      font-size: .66rem;
-
-      word-break: break-all;
-    }
-
-
-    /* =========================================================
-         * MEMBER SUMMARY
-         * ========================================================= */
-
-    .switch-member-summary {
-      display: flex;
-
-      justify-content: flex-end;
-
-      gap: 14px;
-
-      padding:
-        7px 5px 0;
-
-      color: #747c86;
-
-      font-size: .72rem;
-    }
-
-
-    /* =========================================================
-         * SUMMARY CARDS
+         * SUMMARY
          * ========================================================= */
 
     .summary-card {
@@ -1859,27 +1467,21 @@
 
 
     /* =========================================================
-         * SCROLL BAR
+         * SCROLLBAR
          * ========================================================= */
 
-    .switch-slot-scroll::-webkit-scrollbar {
+    .switch-port-group::-webkit-scrollbar {
       height: 7px;
     }
 
-    .switch-slot-scroll::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, .05);
-
-      border-radius: 10px;
+    .switch-port-group::-webkit-scrollbar-track {
+      background: #e6e8ea;
     }
 
-    .switch-slot-scroll::-webkit-scrollbar-thumb {
-      background: #545b63;
+    .switch-port-group::-webkit-scrollbar-thumb {
+      background: #a7adb2;
 
-      border-radius: 10px;
-    }
-
-    .switch-slot-scroll::-webkit-scrollbar-thumb:hover {
-      background: #69717a;
+      border-radius: 20px;
     }
 
 
@@ -1893,33 +1495,16 @@
         justify-content: flex-start;
       }
 
-      .switch-chassis {
-        overflow-x: auto;
-
-        padding-bottom: 8px;
-      }
-
     }
 
 
     @media (max-width: 767.98px) {
 
-      .panel-legend-divider {
+      .legend-divider {
         display: none;
-      }
-
-      .switch-chassis-top {
-        align-items: flex-start;
-      }
-
-      .switch-member-info {
-        align-items: flex-end;
-
-        flex-direction: column;
-
-        gap: 4px;
       }
 
     }
   </style>
+
 </div>
