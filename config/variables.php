@@ -3,7 +3,7 @@
 return [
   "creatorName" => "ThemeSelection",
   "creatorUrl" => "https://themeselection.com",
-  "templateName" => "Mayapada",
+  "templateName" => "Infra",
   "templateSuffix" => "Sneat Bootstrap Dashboard FREE",
   "templateVersion" => "2.0.0",
   "templateFree" => true,

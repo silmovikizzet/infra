@@ -35,7 +35,7 @@ class Login extends Component
       return;
     }
 
-    $this->email = 'admin@mayapadahospital.com';
+    $this->email = 'admin@silmovik.com';
     $this->password = '';
   }
 
