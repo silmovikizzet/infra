@@ -1,255 +1,557 @@
-<p align="center"></p>
+# Infra
 
-<p align="center">
-   <a href="https://themeselection.com/item/sneat-dashboard-free-laravel/" target="_blank">
-      <img src="https://cdn.themeselection.com/ts-assets/sneat/logo/logo.png" alt="sneat-logo" width="60px" height="auto">
-   </a>
-</p>
+**Infra** is a Laravel-based network infrastructure management and monitoring platform designed to simplify device management, monitoring, and infrastructure operations from a centralized web dashboard.
 
-<h1 align="center">
-   <a href="https://themeselection.com/item/sneat-dashboard-free-laravel/" target="_blank" align="center">
-      Sneat - Bootstrap 5 HTML + Laravel Admin Template
-   </a>
-</h1>
+The project focuses on network infrastructure, switch and router management, SSH-based device communication, interface monitoring, and extensible infrastructure automation.
 
-<p align="center">Most Powerful & Comprehensive Free Bootstrap 5 HTML Laravel Admin Dashboard Template built for developers!</p>
+---
 
-<p align="center">
-  <a href="https://github.com/themeselection/sneat-bootstrap-html-laravel-admin-template-free/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/themeselection/sneat-html-laravel-admin-template-free" alt="license">
-  </a>
-  <a href="https://github.com/themeselection/sneat-bootstrap-html-laravel-admin-template-free/releases/">
-    <img src="https://img.shields.io/github/release/themeselection/sneat-bootstrap-html-laravel-admin-template-free.svg" alt="GitHub release">
-  </a>
-  <a href="https://github.com/themeselection/sneat-bootstrap-html-laravel-admin-template-free/issues">
-    <img src="https://img.shields.io/github/issues/themeselection/sneat-bootstrap-html-laravel-admin-template-free.svg" alt="GitHub issues">
-  </a>
-  <a href="https://github.com/themeselection/sneat-bootstrap-html-laravel-admin-template-free/issues">
-    <img src="https://img.shields.io/github/issues-closed/themeselection/sneat-bootstrap-html-laravel-admin-template-free.svg" alt="GitHub closed issues">
-  </a>
-  <a href="https://twitter.com/Theme_Selection" target="_blank">
-    <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/Theme_Selection">
-  </a>
-</p>
+## Features
 
-<kbd>[![Sneat - Bootstrap 5 HTML Laravel Admin Template Demo Screenshot](https://cdn.jsdelivr.net/gh/themeselection/ts-assets/sneat/sneat-bootstrap-laravel-admin-template-free/marketing/sneat-bootstrap-laravel-admin-template-free-github.png)](https://themeselection.com/item/sneat-free-bootstrap-html-laravel-admin-template/)</kbd>
+- Network device management
+- Router and switch inventory
+- Device credential management
+- Site and location management
+- SSH-based device communication
+- Remote command execution
+- Switch interface monitoring
+- Interface status: UP, DOWN, and DISABLED
+- Visual switch port mapping
+- RJ45, SFP, SFP+, and QSFP port visualization
+- Interface search and filtering
+- Infrastructure monitoring dashboard
+- User-based access control
+- Interactive UI powered by Livewire
+- Spreadsheet import and export
+- Extensible device command architecture
+- Extensible parser architecture for multiple network vendors
 
-## Introduction 🚀
+---
 
-If you’re a developer looking for the most Powerful & comprehensive [**Free Bootstrap 5 HTML Laravel Admin Template**](https://themeselection.com/item/sneat-free-bootstrap-html-laravel-admin-template/) built for developers, rich with features, and highly customizable look no further than Sneat. We’ve followed the highest industry standards to bring you the very best admin template that is not only fast and easy to use but highly scalable. Offering ultimate convenience and flexibility, you’ll be able to build whatever application you want with very little hassle.
+## Technology Stack
 
-Build premium quality applications with ease. Use our innovative **[Laravel admin template](https://themeselection.com/item/category/laravel-admin-templates/)** to create eye-catching, high-quality WebApps. Your apps will be completely responsive, ensuring they’ll look stunning and function flawlessly on desktops, tablets, and mobile devices.
+- Laravel 12
+- PHP 8.2+
+- Livewire 3
+- Bootstrap
+- Vite
+- MySQL / MariaDB
+- phpseclib
+- PhpSpreadsheet
 
-[View Demo](https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template-free/demo/)
+---
 
-## Installation ⚒️
+## Requirements
 
-Installing and running Sneat is super easy, please Follow below steps and you will be ready to rock 🤘
+Make sure the following software is installed:
 
-1. Open the terminal in your root directory of Sneat Laravel.
-2. Use the following command to install the composer
+- PHP >= 8.2
+- Composer
+- Node.js
+- NPM
+- MySQL or MariaDB
+- Git
+
+Recommended PHP extensions:
+
+```text
+BCMath
+Ctype
+cURL
+DOM
+Fileinfo
+JSON
+Mbstring
+OpenSSL
+PDO
+PDO MySQL
+Tokenizer
+XML
+Zip
+```
+
+---
+
+# Installation
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/silmovikizzet/infra.git
+```
+
+Enter the project directory:
+
+```bash
+cd infra
+```
+
+---
+
+## 2. Install PHP Dependencies
 
 ```bash
 composer install
 ```
 
-3. Run the following command to generate the key
+---
+
+## 3. Create Environment File
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate Laravel application key:
 
 ```bash
 php artisan key:generate
 ```
 
-4. By running the following command, you will be able to get all the dependencies in your **node_modules** folder:
+---
 
-```bash
-yarn
+## 4. Configure Database
+
+Create a new MySQL or MariaDB database.
+
+Then edit the `.env` file:
+
+```env
+APP_NAME=Infra
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=infra
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-5. To run the project, you need to run the following command in the project directory. It will compile JavaScript and Styles.
+Adjust the values according to your environment.
+
+---
+
+## 5. Run Database Migration
 
 ```bash
-yarn dev
+php artisan migrate
 ```
 
-6. To serve the application, you need to run the following command in the project directory
+If database seeders are available:
+
+```bash
+php artisan db:seed
+```
+
+Or run migrations and seeders together:
+
+```bash
+php artisan migrate --seed
+```
+
+---
+
+## 6. Install Frontend Dependencies
+
+```bash
+npm install
+```
+
+For development:
+
+```bash
+npm run dev
+```
+
+For production:
+
+```bash
+npm run build
+```
+
+---
+
+## 7. Start Application
+
+Start the Laravel development server:
 
 ```bash
 php artisan serve
 ```
 
-7. Now navigate to the given address, and you will see your application is running.🥳
+Open:
 
-## Available Tasks 🧑‍💻
-
-**Building for Production:** If you want to run the project and make the build in the production mode then run the following command in the root directory, by default The project will continue to run in the development mode:
-
-```bash
-yarn prod
+```text
+http://127.0.0.1:8000
 ```
 
-## What's Included 📦
+---
 
-- Dashboard
-- Layouts
-  - Without menu
-  - Without Navbar
-  - Container
-  - Fluid
-  - Blank
-- Pages
-  - Account Settings
-  - Login
-  - Register
-  - Forgot Password
-  - Error
-  - Under Maintenance
-- Cards
-- User Interface
-  - **All Bootstrap Components**
-- Extended UI
-  - Perfect Scrollbar
-  - Text Divider
-- Boxicon
-- Form Elements
-  - Basic Inputs
-  - Input Groups
-- Form Layout
-  - Vertical Form
-  - Horizontal Form
-- Tables
+# Development
 
-## What's in Premium Version 💎
+You can also start Laravel development services using:
 
-| Sneat Free Version                                                                              | Sneat Premium Version                                                                                                                                                                         |
-| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Demo](https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template-free/demo/) | [Demo](https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/)                                                                                                  |
-| [Download](https://themeselection.com/item/sneat-free-bootstrap-html-laravel-admin-template/)   | [Purchase](https://themeselection.com/item/sneat-bootstrap-laravel-admin-template/)                                                                                                           |
-| Single vertical Menu                                                                            | Vertical Menu + Horizontal Menu                                                                                                                                                               |
-| Simple Light Style                                                                              | Light, Dark & System Style                                                                                                                                                                    |
-| Default Theme                                                                                   | Default, Semi Dark & Bordered Themes                                                                                                                                                          |
-| Fixed Layout(Menu)                                                                              | Fixed & Static Layout(Menu)                                                                                                                                                                   |
-| 1 Simple Dashboard                                                                              | 5 Niche Dashboards                                                                                                                                                                            |
-| -                                                                                               | Multiple Ready to use Application like **Laravel CRUD Application**, Email, Chat, Calendar, Kanban, eCommerce, Academy, Logistics, Invoice, Users List, Users View, Roles and Permission etc. |
-| Simple From Elements                                                                            | Advance form elements, validation & form wizard                                                                                                                                               |
-| Basic Cards                                                                                     | Basic, Advance , Statistics, Analytics, Gamifications and Actions Cards                                                                                                                       |
-| Basic User Interface(Components)                                                                | Advance and Custom User Interfaces(Components)                                                                                                                                                |
-| Two Extended Components                                                                         | Twelve Ready to use Extended Components                                                                                                                                                       |
-| -                                                                                               | Quick Search - Quickly navigate between pages (w/ hotkey support)                                                                                                                             |
-| Basic Pages                                                                                     | Authentication Pages in 2 Variants + Ready to use pages like User Profile, Account Settings,FAQ, Help Center, Pricing, Misc etc.                                                              |
-| -                                                                                               | 3D Characters + Illustrations                                                                                                                                                                 |
-| Basic tables                                                                                    | Advanced & Data tables                                                                                                                                                                        |
-| -                                                                                               | Quick customization using theme config file                                                                                                                                                   |
-| -                                                                                               | Leaflet Maps                                                                                                                                                                                  |
-| 1 Chart Library                                                                                 | 2 Chart Libraries                                                                                                                                                                             |
-| -                                                                                               | Multiple Navbar & Menu Options                                                                                                                                                                |
-| -                                                                                               | Starter-kit                                                                                                                                                                                   |
-| -                                                                                               | **Localization support**                                                                                                                                                                      |
-| -                                                                                               | RTL Support                                                                                                                                                                                   |
-| Regular Support                                                                                 | Priority Support                                                                                                                                                                              |
-| Detailed Documentation                                                                          | Detailed Documentation                                                                                                                                                                        |
+```bash
+composer run dev
+```
 
-## Documentation 📜
+This can run the application server, queue worker, logs, and Vite development server together.
 
-<!-- If you have docs in wiki then use below line -->
+---
 
-Check GitHub [Wiki](https://github.com/themeselection/sneat-bootstrap-html-laravel-admin-template-free/wiki) of this repo
+# Network Device Communication
 
-<!-- If you have live docs then use below line -->
+Infra uses SSH communication to interact with supported network devices.
 
-Check out our live [Documentation](https://demos.themeselection.com/sneat-bootstrap-html-admin-template/documentation/laravel-introduction.html)
+The general workflow is:
 
-## Browser Support 🖥️
+```text
+Infra
+  │
+  ├── Device
+  │
+  ├── Credential
+  │
+  ├── SSH Connection
+  │
+  ├── Device Command
+  │
+  ├── Parser
+  │
+  └── Dashboard
+```
 
-![chrome](https://github.com/nuxt/nuxt/assets/47495003/bbb6d7b0-2db6-4af4-abdc-a73de71dd287)
-&nbsp;&nbsp;![firefox](https://github.com/nuxt/nuxt/assets/47495003/bca1f2d0-d597-453b-8525-5c94e36bfc33)
-&nbsp;&nbsp;![safari](https://github.com/nuxt/nuxt/assets/47495003/8ecbb395-78fb-40fb-bb59-7301bf8a7e5d)
-&nbsp;&nbsp;![Microsoft Edge](https://github.com/nuxt/nuxt/assets/47495003/f945821b-0cbd-464d-8103-824d4d5c4e9a)
+Commands and parsers can be separated by device or vendor, making it easier to add support for additional network platforms.
 
-## Contributing 🦸
+---
 
-Contribution are always welcome and recommended! Here is how:
+# Switch Interface Monitoring
 
-- Fork the repository ([here is the guide](https://docs.github.com/en/get-started/quickstart/fork-a-repo)).
-- Clone to your machine `git clone https://github.com/themeselection/sneat-bootstrap-html-laravel-admin-template-free.git` Make your changes
-- Create a pull request
+Infra can retrieve and display switch interface information.
 
-### Contribution Requirements 🧰
+Available interface states can include:
 
-- When you contribute, you agree to give a non-exclusive license to ThemeSelection to use that contribution in any context as we (ThemeSelection) see appropriate.
-- If you use content provided by another party, it must be appropriately licensed using an open source license.
-- Contributions are only accepted through Github pull requests.
-- Finally, contributed code must work in all supported browsers (see above for browser support).
+```text
+UP
+DOWN
+DISABLED
+```
 
-## Changelog 📆
+Interface information can include:
 
-Please refer to the [CHANGELOG](CHANGELOG.md) file. We will add a detailed release notes to each new release.
+- Interface name
+- Interface description
+- Link status
+- Administrative status
+- Port type
+- Physical port position
 
-## Support 🧑🏻‍💻
+Supported visual port types can include:
 
-For free products, enjoy community support via GitHub issues. Upgrade to Premium for dedicated support from our expert team.
+```text
+RJ45 / Ethernet
+SFP
+SFP+
+QSFP
+```
 
-## License &copy;
+---
 
-- Copyright © [ThemeSelection](https://themeselection.com/)
-- Licensed under [MIT](LICENSE)
-- All our free items are Open Source and licensed under MIT. You can use our free items for personal as well as commercial purposes. We just need an attribution from your end. Copy the below link and paste it at the footer of your web application or project.
+# Project Structure
 
-  ```html
-  <a href="https://themeselection.com/">ThemeSelection</a>
-  ```
+Important application directories:
 
-## Also Available In
+```text
+app/
+├── Console/
+│   └── Commands/
+├── Http/
+│   └── Controllers/
+├── Livewire/
+├── Models/
+├── Providers/
+└── Services/
+```
 
-<p>
-   <!-- Figma -->
-   <a href="https://themeselection.com/item/sneat-figma-admin-dashboard-builder-ui-kit/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/0318a6c8-4f9b-4cf6-af5e-d357f909ea2b"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/47f21dfe-c1fc-4a7d-859e-4d98f8cdded1"><img width="auto" height="74px" alt="html" src="https://github.com/microsoft/vscode/assets/47495003/47f21dfe-c1fc-4a7d-859e-4d98f8cdded1"></picture></img></a>&nbsp;&nbsp;
-   <!-- HTML -->
-   <a href="https://themeselection.com/item/sneat-bootstrap-html-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/5fe77c46-2e4c-475a-8dec-e30e2badddee"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/3f5decd8-cd99-4ed3-aa76-528ca061385b"><img width="auto" height="74px" alt="html" src="https://github.com/microsoft/vscode/assets/47495003/3f5decd8-cd99-4ed3-aa76-528ca061385b"></picture></img></a>&nbsp;&nbsp;
-   <!-- HTML + Laravel -->
-   <a href="https://themeselection.com/item/sneat-bootstrap-laravel-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/efe420e4-9863-41b7-9eda-47ea94f21a62"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/be3b86e0-4d5e-4736-bf89-4267fb4d6710"><img width="auto" height="74px" alt="html_laravel" src="https://github.com/microsoft/vscode/assets/47495003/be3b86e0-4d5e-4736-bf89-4267fb4d6710"></picture></img></a>&nbsp;&nbsp;
-   <!-- HTML + Django -->
-   <a href="https://themeselection.com/item/sneat-bootstrap-django-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/3c87d33b-1223-4aaa-a652-388dcb714c98"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/51db1947-eac1-466f-87fd-5a209010fe9c"><img width="auto" height="74px" alt="html_django" src="https://github.com/microsoft/vscode/assets/47495003/51db1947-eac1-466f-87fd-5a209010fe9c"></picture></img></a>&nbsp;&nbsp;
-   <!-- .Net Core -->
-   <a href="https://themeselection.com/item/sneat-aspnet-core-mvc-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/6327fd7b-9c54-4189-a852-28551ad0e002"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/9856e9d5-021f-4573-902a-702e80dd0102"><img width="auto" height="74px" alt="net_core" src="https://github.com/microsoft/vscode/assets/47495003/9856e9d5-021f-4573-902a-702e80dd0102"></picture></img></a>&nbsp;&nbsp;
-   <!-- NextJS -->
-   <a href="https://themeselection.com/item/sneat-mui-react-nextjs-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/66344629-6d21-4f92-9078-f479b39cb34e"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/e1daf4e1-3fa5-4a44-969a-6143ddd67310"><img width="auto" height="74px" alt="next.js" src="https://github.com/microsoft/vscode/assets/47495003/e1daf4e1-3fa5-4a44-969a-6143ddd67310"></picture></img></a>&nbsp;&nbsp;
-   <!-- React -->
-   <a href="https://themeselection.com/item/sneat-mui-react-nextjs-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/3877046e-c652-4b3d-99e9-2e134da1d6cf"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/8c8c940e-d8f9-4213-a7f7-f8bc4968f169"><img width="auto" height="74px" alt="react" src="https://github.com/microsoft/vscode/assets/47495003/8c8c940e-d8f9-4213-a7f7-f8bc4968f169"></picture></img></a>&nbsp;&nbsp;
-   <!-- Vue -->
-   <a href="https://themeselection.com/item/sneat-vuetify-vuejs-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/881bbbb8-d1c9-421c-9bce-4ea43dfa9e6e"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/b02d6473-0345-42c2-be58-e648806104fa"><img width="auto" height="74px" alt="vue" src="https://github.com/microsoft/vscode/assets/47495003/b02d6473-0345-42c2-be58-e648806104fa"></picture></img></a>&nbsp;&nbsp;
-   <!-- Vue + Laravel -->
-   <a href="https://themeselection.com/item/sneat-vuetify-vuejs-laravel-admin-template/" target="_blank"><picture><source width="auto" height="74px" media="(prefers-color-scheme: dark)" srcset="https://github.com/microsoft/vscode/assets/47495003/20b6428e-3fa5-4f80-a389-9e4cd732c2de"><source width="auto" height="74px" media="(prefers-color-scheme: light)" srcset="https://github.com/microsoft/vscode/assets/47495003/3008d3eb-7b5b-4d9c-8563-837744a901da"><img width="auto" height="74px" alt="vue_laravel" src="https://github.com/microsoft/vscode/assets/47495003/3008d3eb-7b5b-4d9c-8563-837744a901da"></picture></img></a>&nbsp;&nbsp;
-</p>
+### `app/Livewire`
 
-<!-- Add other pro variants here. You can get the logo URL from here: https://icones.js.org/collection/logos -->
+Contains interactive dashboard components.
 
-## Looking For Premium Admin Templates ?? 👀
+### `app/Models`
 
-**[ThemeSelection](https://themeselection.com/)** provides Selected high quality, modern design, professional and easy-to-use **Fully Coded Dashboard Templates & UI Kits** to create your applications faster!
+Contains application and infrastructure models.
 
-- [Bootstrap Admin Templates](https://themeselection.com/products/category/bootstrap-admin-templates/)
-- [VueJS Admin Templates](https://themeselection.com/products/category/vuejs-admin-templates/)
-- [Laravel Admin Templates](https://themeselection.com/products/category/laravel-admin-templates/)
-- [Django Admin Templates](https://themeselection.com/item/category/django-admin-template/)
-- [React (NextJS) Admin Templates](https://themeselection.com/item/category/next-js-admin-template/)
-- [ASP.Net Core Admin Templates](https://themeselection.com/item/category/asp-net-dashboard/)
-- [Free UI Kits](https://themeselection.com/products/category/free-ui-kits/)
+### `app/Services`
 
-If you want to [Download Free Admin Templates](https://themeselection.com/products/category/download-free-admin-templates/) like Materio then do visit [ThemeSelection](https://themeselection.com/).
+Contains infrastructure business logic such as device communication, command processing, and integrations.
 
-## Useful Links 🎁
+### `app/Console/Commands`
 
-- [Vue CheatSheet](https://vue-cheatsheet.themeselection.com/)
-- [Freebies](https://themeselection.com/item/category/freebies/)
-- [Free Admin Templates](https://themeselection.com/item/category/free-admin-templates/)
-- [Bootstrap 5 CheatSheet](https://bootstrap-cheatsheet.themeselection.com/)
+Contains CLI commands and scheduled infrastructure operations.
 
-## Social Media :earth_africa:
+### `app/Http/Controllers`
 
-- [x](https://x.com/Theme_Selection)
-- [Facebook](https://www.facebook.com/ThemeSelections/)
-- [Pinterest](https://www.pinterest.com/themeselection/)
-- [Instagram](https://www.instagram.com/themeselection/)
-- [Discord](https://discord.com/invite/kBHkY7DekX)
-- [YouTube](https://www.youtube.com/channel/UCuryo5s0CW4aP83itLjIdZg)
-# infra
+Contains HTTP controllers and request handling.
+
+---
+
+# Queue Worker
+
+If the application uses Laravel queues, start the worker with:
+
+```bash
+php artisan queue:work
+```
+
+For development:
+
+```bash
+php artisan queue:listen
+```
+
+For production environments, using Supervisor or systemd is recommended.
+
+---
+
+# Laravel Scheduler
+
+If scheduled commands are used, add Laravel Scheduler to cron:
+
+```bash
+* * * * * cd /path/to/infra && php artisan schedule:run >> /dev/null 2>&1
+```
+
+---
+
+# Production Deployment
+
+Install optimized production dependencies:
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Build production assets:
+
+```bash
+npm run build
+```
+
+Run migrations:
+
+```bash
+php artisan migrate --force
+```
+
+Optimize Laravel:
+
+```bash
+php artisan optimize
+```
+
+Make sure Laravel writable directories have the correct permissions:
+
+```bash
+chmod -R 775 storage bootstrap/cache
+```
+
+---
+
+# Security
+
+Infrastructure management systems may contain sensitive data such as:
+
+- SSH credentials
+- Device credentials
+- Network topology
+- Internal IP addresses
+- Infrastructure metadata
+
+Never commit your `.env` file or production credentials to Git.
+
+Recommended production security practices:
+
+- Use HTTPS
+- Use strong credentials
+- Restrict database access
+- Restrict SSH access
+- Configure firewall rules
+- Use role-based access control
+- Keep dependencies updated
+- Monitor application logs
+- Store secrets only in environment variables or secure secret storage
+
+---
+
+# Configuration
+
+Environment-specific configuration should be stored in:
+
+```text
+.env
+```
+
+Application configuration should be stored inside:
+
+```text
+config/
+```
+
+Avoid hard-coding passwords, SSH credentials, tokens, internal IP addresses, or secrets directly in the source code.
+
+---
+
+# Useful Commands
+
+Clear Laravel caches:
+
+```bash
+php artisan optimize:clear
+```
+
+Optimize Laravel:
+
+```bash
+php artisan optimize
+```
+
+Cache configuration:
+
+```bash
+php artisan config:cache
+```
+
+Cache routes:
+
+```bash
+php artisan route:cache
+```
+
+Cache views:
+
+```bash
+php artisan view:cache
+```
+
+Run tests:
+
+```bash
+php artisan test
+```
+
+Open Laravel Tinker:
+
+```bash
+php artisan tinker
+```
+
+---
+
+# Updating
+
+Pull the latest version:
+
+```bash
+git pull
+```
+
+Install backend dependencies:
+
+```bash
+composer install
+```
+
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Run database migrations:
+
+```bash
+php artisan migrate
+```
+
+Build frontend assets:
+
+```bash
+npm run build
+```
+
+Clear and rebuild Laravel caches:
+
+```bash
+php artisan optimize:clear
+php artisan optimize
+```
+
+---
+
+# Contributing
+
+Create a new branch:
+
+```bash
+git checkout -b feature/my-feature
+```
+
+Commit your changes:
+
+```bash
+git add .
+git commit -m "Add new infrastructure feature"
+```
+
+Push the branch:
+
+```bash
+git push origin feature/my-feature
+```
+
+Then create a Pull Request.
+
+---
+
+# GitHub Description
+
+Recommended repository description:
+
+```text
+Network infrastructure management, monitoring and automation platform built with Laravel and Livewire.
+```
+
+Recommended GitHub topics:
+
+```text
+laravel
+livewire
+networking
+network-monitoring
+network-automation
+network-management
+infrastructure
+ssh
+switch
+router
+devops
+```
+
+---
+
+# Author
+
+**Silmovik**
+
+Infrastructure • Networking • Automation • Software Engineering
