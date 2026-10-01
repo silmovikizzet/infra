@@ -78,7 +78,7 @@ class VlanView extends Component
   }
 
   protected array $messages = [
-    'edit_network.regex' => 'Format network harus IP atau CIDR, contoh: 10.2.5.0/24',
+    'edit_network.regex' => 'Format network harus IP atau CIDR, contoh: 10.10.5.0/24',
     'edit_netmask.ip' => 'Netmask harus IP valid.',
     'edit_gateway.ip' => 'Gateway harus IP valid.',
   ];

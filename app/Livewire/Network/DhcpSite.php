@@ -21,9 +21,9 @@ class DhcpSite extends Component
 
   // form fields
   public $name = '';
-  public $network = '';         // disarankan CIDR: 10.2.86.0/23
+  public $network = '';         // disarankan CIDR: 10.10.86.0/23
   public $netmask = '';         // optional, auto dari CIDR
-  public $dns_list_text = '';   // "10.2.0.251 172.16.0.252"
+  public $dns_list_text = '';   // "10.10.0.251 172.16.0.252"
   public $gateway_list_text = '';
   public $forbidden_ip = '';
   public $lease_days = 0;
@@ -63,7 +63,7 @@ class DhcpSite extends Component
     'name.max' => 'Nama Pool maksimal :max karakter.',
 
     'network.required' => 'Network wajib diisi.',
-    'network.regex' => 'Format Network harus CIDR, contoh: 10.2.86.0/23.',
+    'network.regex' => 'Format Network harus CIDR, contoh: 10.10.86.0/23.',
 
     'forbidden_ip.ip' => 'Forbidden IP harus berupa alamat IP yang valid.',
 

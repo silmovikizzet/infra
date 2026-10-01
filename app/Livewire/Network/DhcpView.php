@@ -392,7 +392,7 @@ class DhcpView extends Component
     }
 
     // Network + mask dalam satu baris:
-    // Network: 10.2.16.0 mask 255.255.254.0
+    // Network: 10.10.16.0 mask 255.255.254.0
     if (
       preg_match(
         '/^\s*Network\s*:\s*([0-9]{1,3}(?:\.[0-9]{1,3}){3})\s+mask\s+([0-9]{1,3}(?:\.[0-9]{1,3}){3})\s*$/im',
@@ -404,12 +404,12 @@ class DhcpView extends Component
       $result['mask'] = trim($m[2]);
     }
 
-    // dns-list 10.2.0.251 172.16.0.252
+    // dns-list 10.10.0.251 172.16.0.252
     if (preg_match('/^\s*dns-list\s+(.+?)\s*$/im', $text, $m)) {
       $result['dns_list'] = $this->splitIpList($m[1]);
     }
 
-    // gateway-list 10.2.17.254
+    // gateway-list 10.10.17.254
     if (preg_match('/^\s*gateway-list\s+(.+?)\s*$/im', $text, $m)) {
       $result['gateway_list'] = $this->splitIpList($m[1]);
     }

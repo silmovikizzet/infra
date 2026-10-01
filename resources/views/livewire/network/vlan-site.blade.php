@@ -169,7 +169,7 @@
               <div class="col-md-6">
                 <label class="form-label">Network (CIDR / IP)</label>
                 <input type="text" class="form-control" wire:model.live.debounce.300ms="network"
-                  placeholder="10.2.86.0 atau 10.2.86.0/24">
+                  placeholder="10.10.86.0 atau 10.10.86.0/24">
                 @error('network') <div class="text-danger small">{{ $message }}</div> @enderror
               </div>
 

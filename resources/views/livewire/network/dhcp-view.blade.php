@@ -462,7 +462,7 @@
             <div class="col-md-6">
               <label class="form-label">Gateway List</label>
               <textarea class="form-control" rows="3" wire:model.defer="edit_gateway_text"
-                placeholder="10.2.17.254, 10.2.17.253"></textarea>
+                placeholder="10.10.17.254, 10.10.17.253"></textarea>
               <div class="form-text">Pisahkan dengan koma atau baris baru.</div>
             </div>
 

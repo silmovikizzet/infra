@@ -133,7 +133,7 @@
 
               <div class="col-md-6">
                 <label class="form-label">Nama Pool</label>
-                <input type="text" class="form-control" wire:model.defer="name" placeholder="Contoh: AP-MHG">
+                <input type="text" class="form-control" wire:model.defer="name" placeholder="Contoh: My Pool">
                 @error('name')
                 <div class="text-danger small">{{ $message }}</div>
                 @enderror
@@ -142,7 +142,7 @@
               <div class="col-md-6">
                 <label class="form-label">Network (CIDR / IP)</label>
                 <input type="text" class="form-control" wire:model.live.debounce.300ms="network"
-                  placeholder="10.2.86.0 atau 10.2.86.0/24">
+                  placeholder="10.10.86.0 atau 10.10.86.0/24">
                 @error('network') <div class="text-danger small">{{ $message }}</div> @enderror
               </div>
 
@@ -156,7 +156,7 @@
               <div class="col-md-6">
                 <label class="form-label">DNS List (pisahkan spasi)</label>
                 <input type="text" class="form-control" wire:model.defer="dns_list_text"
-                  placeholder="10.2.0.251 172.16.0.252">
+                  placeholder="10.10.0.251 172.16.0.252">
                 @error('dns_list_text')
                 <div class="text-danger small">{{ $message }}</div>
                 @enderror
@@ -164,7 +164,7 @@
 
               <div class="col-md-6">
                 <label class="form-label">Gateway List (pisahkan spasi)</label>
-                <input type="text" class="form-control" wire:model.defer="gateway_list_text" placeholder="10.2.87.254">
+                <input type="text" class="form-control" wire:model.defer="gateway_list_text" placeholder="10.10.87.254">
                 @error('gateway_list_text')
                 <div class="text-danger small">{{ $message }}</div>
                 @enderror

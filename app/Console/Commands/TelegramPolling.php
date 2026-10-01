@@ -23,7 +23,7 @@ class TelegramPolling extends Command
      * Ganti dengan username bot Telegram kamu.
      *
      * Contoh:
-     * @mhg_ai_bot
+     * @silmovik_ai_bot
      *
      * Harus memakai karakter @.
      */
@@ -136,7 +136,7 @@ class TelegramPolling extends Command
            * Hapus mention bot dari pertanyaan user.
            *
            * Contoh:
-           * "@mhg_ai halo" menjadi "halo".
+           * "@silmovik_ai halo" menjadi "halo".
            */
           if ($isMentioned) {
             $text = trim(

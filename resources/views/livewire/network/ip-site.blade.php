@@ -141,7 +141,7 @@
 
               <div class="col-md-6">
                 <label class="form-label">IP Address</label>
-                <input type="text" class="form-control" wire:model.defer="ip" placeholder="Contoh: 10.2.86.10">
+                <input type="text" class="form-control" wire:model.defer="ip" placeholder="Contoh: 10.10.86.10">
                 @error('ip')
                 <div class="text-danger small">{{ $message }}</div>
                 @enderror

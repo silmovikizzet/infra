@@ -13,18 +13,18 @@ return new class extends Migration {
       // optional kalau mau multi-tenant per site (biar pool bisa dibatasi per site)
       $table->string('site')->nullable()->index();
 
-      $table->string('name', 100)->index(); // contoh: AP-MHG
+      $table->string('name', 100)->index(); // contoh: My Pool
 
       // network CIDR + netmask (biar gampang query & display)
-      $table->string('network', 50);        // contoh: 10.2.86.0/23 (disarankan)
+      $table->string('network', 50);        // contoh: 10.10.86.0/23 (disarankan)
       $table->string('netmask', 50)->nullable(); // contoh: 255.255.254.0
 
       // list IP: simpan JSON biar bisa banyak
-      $table->json('dns_list')->nullable();      // ["10.2.0.251","172.16.0.252"]
-      $table->json('gateway_list')->nullable();  // ["10.2.87.254"]
+      $table->json('dns_list')->nullable();      // ["10.10.0.251","172.16.0.252"]
+      $table->json('gateway_list')->nullable();  // ["10.10.87.254"]
 
       // single IP
-      $table->ipAddress('forbidden_ip')->nullable(); // 10.2.87.254
+      $table->ipAddress('forbidden_ip')->nullable(); // 10.10.87.254
 
       // expired: simpan detik + breakdown (pilih salah satu cara)
       // cara simple: total seconds
